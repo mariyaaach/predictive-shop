@@ -17,16 +17,16 @@
 
 Для реализации проекта используется следующий стек технологий:
 
-## 🔧 Технологический стек
-
-- ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white) **FastAPI**
-- ![Kafka](https://img.shields.io/badge/Apache%20Kafka-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white) **Kafka**
-- ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white) **PostgreSQL**
+### Backend:
+- ![Python]([https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white](https://img.shields.io/badge/Python-005571?style=for-the-badge&logo=Python&logoColor=white)) 
+- ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white) 
+- ![Kafka](https://img.shields.io/badge/Apache%20Kafka-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white) 
+- ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white) 
 
 ### Data Science:
-- ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white) **scikit-learn**
-- ![pandas](https://img.shields.io/badge/pandas-150458?style=for-the-badge&logo=pandas&logoColor=white) **pandas**
-- ![catboost](https://img.shields.io/badge/catboost-FF6D01?style=for-the-badge&logo=catboost&logoColor=white) **catboost**
+- ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white) 
+- ![pandas](https://img.shields.io/badge/pandas-150458?style=for-the-badge&logo=pandas&logoColor=white) 
+- ![catboost](https://img.shields.io/badge/catboost-FF6D01?style=for-the-badge&logo=catboost&logoColor=white) 
 
 
 ## 📊 Датасет
