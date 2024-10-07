@@ -17,20 +17,17 @@
 
 Для реализации проекта используется следующий стек технологий:
 
-- **Backend**: 
-  - FastAPI
-  - Kafka
-  - SQLAlchemy
-  - Alembic
-  - PostgreSQL
-- **Data Science**:
-  - scikit-learn
-  - pandas
-  - catboost
-- **Оплата**:
-  - Yoomoney
-- **Авторизация**:
-  - OAuth, JWT
+## 🔧 Технологический стек
+
+- ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white) **FastAPI**
+- ![Kafka](https://img.shields.io/badge/Apache%20Kafka-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white) **Kafka**
+- ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white) **PostgreSQL**
+
+### Data Science:
+- ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white) **scikit-learn**
+- ![pandas](https://img.shields.io/badge/pandas-150458?style=for-the-badge&logo=pandas&logoColor=white) **pandas**
+- ![catboost](https://img.shields.io/badge/catboost-FF6D01?style=for-the-badge&logo=catboost&logoColor=white) **catboost**
+
 
 ## 📊 Датасет
 
