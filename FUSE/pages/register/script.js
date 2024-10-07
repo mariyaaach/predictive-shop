@@ -3,6 +3,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     registerLink.addEventListener('click', function(event) {
         event.preventDefault();  // Останавливаем стандартное поведение ссылки
-        window.location.href = '../register/index.html';  // Перенаправляем на страницу регистрации
+        window.location.href = '../login/index.html';  // Перенаправляем на страницу регистрации
     });
 });
