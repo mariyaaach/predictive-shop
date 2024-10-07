@@ -1,0 +1,81 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: 'Manrope';
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+    background-color: #f4f4f4;
+}
+.container {
+    display: flex;
+    font-family: 'Manrope';
+    width: 1000px;
+    height: 600px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+.register-section {
+    width: 50%;
+    padding: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.register-section h1 {
+    margin: 0 0 25px 100px; /* Отступы: сверху 0, справа 0, снизу 15px, слева 0 */
+    font-size: 32px;
+    font-weight: 700;
+}
+.register-section input {
+    width: 100%;
+    padding: 15px;
+    font-family: 'Manrope';
+    font-weight: 200;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+.register-section input::placeholder {
+    color: #999;
+}
+.register-section a {
+    font-size: 10px;
+    font-family: 'Manrope';
+    text-align: right;
+    color: #999;
+    margin: -6px 0 30px 0; /* Отступы: сверху 0, справа 0, снизу 15px, слева 0 */
+    display: block;
+}
+.register-section button {
+    width: 100%;
+    padding: 15px;
+    background-color: #2A2A2A;
+    color: white;
+    font-size: 13px;
+    font-family: 'Manrope';
+    font-weight: 300;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.register-section button:hover {
+    background-color: #444;
+    transform: scale(0.95);
+}
+.image-section {
+    width: 50%;
+    background-image: url("../../assets/images/background_reg.png");
+    background-size: cover;
+    border-radius: 15px;
+    background-position: center;
+    position: relative;
+}
