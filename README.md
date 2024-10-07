@@ -15,15 +15,13 @@
 
 ## 🔧 Технологический стек
 
-Для реализации проекта используется следующий стек технологий:
-
-### Backend:
-- ![Python]([https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white](https://img.shields.io/badge/Python-005571?style=for-the-badge&logo=Python&logoColor=white)) 
+- ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) 
 - ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white) 
 - ![Kafka](https://img.shields.io/badge/Apache%20Kafka-231F20?style=for-the-badge&logo=apache-kafka&logoColor=white) 
 - ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white) 
 
 ### Data Science:
+- ![NumPy](https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white) 
 - ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white) 
 - ![pandas](https://img.shields.io/badge/pandas-150458?style=for-the-badge&logo=pandas&logoColor=white) 
 - ![catboost](https://img.shields.io/badge/catboost-FF6D01?style=for-the-badge&logo=catboost&logoColor=white) 
@@ -34,3 +32,4 @@
 Для обучения и тестирования модели используется датасет от Kaggle:
 
 [Predict Future Sales Dataset](https://www.kaggle.com/competitions/competitive-data-science-predict-future-sales/data)
+
