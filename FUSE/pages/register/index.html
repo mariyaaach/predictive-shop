@@ -13,12 +13,22 @@
     <div class="register-section">
         <h1>Регистрация</h1>
         <input type="text" placeholder="Имя">
-        <input type="email" placeholder="E-mail">
+        <input type="email" id="email" placeholder="E-mail"> 
         <input type="password" placeholder="Пароль">
+        <input type="password" placeholder="Подтвердите пароль">
         <a href="#">Уже есть аккаунт? Войти</a>
-        <button>Зарегистрироваться</button>
+        <button id="register-btn">Зарегистрироваться</button>
     </div>
     <div class="image-section">
+    </div>
+</div>
+
+<!-- Pop-up окно -->
+<div id="popup" class="popup hidden">
+    <div class="popup-content">
+        <p>На e-mail <span id="user-email"></span> был выслан код для подтверждения аккаунта</p>
+        <input type="text" id="confirmation-code" placeholder="Введите код">
+        <button id="confirm-btn">Подтвердить</button>
     </div>
 </div>
 

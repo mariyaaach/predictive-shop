@@ -7,14 +7,19 @@
 body {
     font-family: 'Manrope', sans-serif;
     background-color: #fff;
-    color: #333;
+    color: #2F2F2F;
+}
+
+main {
+    padding-top: 40px; /* Отступ сверху для разделения от хедера */
 }
 
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 40px; /* Отступы по краям */
+    padding: 20px 40px;
+    border-bottom: 1px solid #e0e0e0; /* Линия под навигацией */
 }
 
 .logo {
@@ -23,7 +28,7 @@ body {
 
 .nav-icons {
     display: flex;
-    gap: 15px;
+    gap: 30px;
 }
 
 .nav-icons img {
@@ -31,55 +36,28 @@ body {
     height: 24px;
 }
 
-.brand-section {
-    background-color: #e0e0e0;
-    text-align: center;
-    padding: 60px 0;
-    margin-bottom: 40px; /* Отступы */
-}
-
-.brand-section h1 {
-    font-size: 64px;
-    font-weight: 800;
-}
-
-.brand-section p {
-    font-size: 18px;
-    margin: 20px 0;
-}
-
-.brand-button {
-    background-color: #000;
-    color: #fff;
-    border: none;
-    padding: 12px 24px;
-    font-size: 18px;
-    cursor: pointer;
-    border-radius: 30px; /* Скругление */
-}
-
-.brand-button:hover {
-    background-color: #333;
-}
-
 .new-products, .categories, .recommendations {
+    font-family: 'Manrope', sans-serif;
     padding: 0 40px; /* Отступы по краям */
     margin-bottom: 50px;
 }
 
 .new-products h2, .categories h2, .recommendations h2 {
+    font-family: 'Manrope', sans-serif;
     font-size: 36px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     text-transform: uppercase;
 }
 
 .product-list, .category-list {
+    font-family: 'Manrope', sans-serif;
     display: flex;
     gap: 20px;
     justify-content: space-between;
 }
 
 .product-item, .category-item {
+    font-family: 'Manrope', sans-serif;
     background-color: #fff;
     padding: 3px;
     flex: 1;
@@ -88,7 +66,9 @@ body {
 }
 
 .product-image {
+    font-family: 'Manrope', sans-serif;
     background-color: #555;
+    display: flex;
     width: 100%;
     height: 300px; /* Увеличение высоты изображения */
     margin-bottom: 10px;
@@ -96,32 +76,60 @@ body {
 }
 
 .product-item h3 {
+    font-family: 'Manrope', sans-serif;
     font-size: 18px;
     font-weight: 600;
 }
 
 .product-item .price {
+    font-family: 'Manrope', sans-serif;
     font-size: 16px;
     color: #888;
 }
 
 .category-header {
+    font-family: 'Manrope', sans-serif;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    
 }
 
-.view-all-button {
-    background-color: #000;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 30px; /* Скругление */
+.product-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Сетка с 3 колонками */
+    gap: 20px;
 }
 
-.view-all-button:hover {
-    background-color: #333;
+.category-list {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* Подстройка под категории */
+    gap: 20px;
+}
+
+/* Адаптивность для меньших экранов */
+@media (max-width: 768px) {
+    .product-list, .category-list {
+        grid-template-columns: repeat(2, 1fr); /* Сетка с 2 колонками на планшетах */
+    }
+}
+
+@media (max-width: 480px) {
+    .product-list, .category-list {
+        grid-template-columns: 1fr; /* Сетка с 1 колонкой на мобильных */
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .product-item, .category-item {
+        width: calc(50% - 20px);
+    }
+}
+
+@media (max-width: 480px) {
+    .product-item, .category-item {
+        width: 100%;
+    }
 }

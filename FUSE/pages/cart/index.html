@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+    <nav class="navbar">
+        <img src="..\..\assets\svg\logo.svg" alt="Essencia Logo" class="logo">
+        <div class="nav-icons">
+            <img src="..\..\assets\svg\user.svg" alt="User Icon">
+            <img src="..\..\assets\svg\wishlist.svg" alt="Wishlist Icon">
+            <img src="..\..\assets\svg\cart.svg" alt="Cart Icon">
+        </div>
+    </nav>
+</header>
+
+<main>
+    <section class="cart">
+        <h2>Корзина</h2>
+        <div class="cart-items">
+            <div class="cart-item">
+                <div class="cart-item-image" style="background-image: url('/path/to/image1.jpg');"></div>
+                <div class="cart-item-details">
+                    <h3>Название товара</h3>
+                    <p class="category">Категория</p>
+                    <span class="price">570 ₽</span>
+                    <div class="quantity-control">
+                        <button class="decrement">-</button>
+                        <span class="quantity">1</span>
+                        <button class="increment">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Дополнительные товары могут быть добавлены таким же образом -->
+            
+        </div>
+
+        <!-- Итоги заказа -->
+        <div class="cart-summary">
+            <div class="total">
+                <span>Итого:</span>
+                <span class="total-price">570 ₽</span>
+            </div>
+            <button class="checkout-btn">Оплатить</button>
+        </div>
+    </section>
+</main>
+
+</body>
+</html>

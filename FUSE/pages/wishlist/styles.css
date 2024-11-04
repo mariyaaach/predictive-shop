@@ -1,0 +1,115 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Manrope', sans-serif;
+    background-color: #fff;
+    color: #333;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.logo {
+    max-width: 120px;
+}
+
+.nav-icons {
+    display: flex;
+    gap: 30px;
+}
+
+.nav-icons img {
+    width: 24px;
+    height: 24px;
+}
+
+main {
+    padding: 40px;
+}
+
+.favorites {
+    text-align: center;
+}
+
+.favorites h2 {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 0px;
+}
+
+.favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 0 40px;
+}
+
+.favorites-card {
+    background-color: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+    text-align: left;
+}
+
+.favorites-card:hover {
+    transform: translateY(-5px);
+}
+
+.favorites-image {
+    width: 100%;
+    height: 150px;
+    background-color: #ddd;
+    background-size: cover;
+    background-position: center;
+}
+
+.favorites-info {
+    padding: 20px;
+}
+
+.favorites-info h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.category {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.price {
+    font-size: 18px;
+    color: #2F2F2F;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.remove-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 14px;
+    color: #fff;
+    background-color: #d9534f;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.remove-btn:hover {
+    background-color: #c9302c;
+}
