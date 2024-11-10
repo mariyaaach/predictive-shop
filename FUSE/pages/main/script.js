@@ -1,3 +1,49 @@
+document.addEventListener("DOMContentLoaded", function() {
+    // Находим элемент с изображением корзины по alt атрибуту или с использованием класса/индекса, если атрибуты уникальны
+    const cartLink = document.querySelector('img[alt="Cart Icon"]');
+
+    // Проверяем, найден ли элемент
+    if (cartLink) {
+        cartLink.addEventListener('click', function(event) {
+            event.preventDefault();  // Останавливаем стандартное поведение ссылки
+            window.location.href = '../cart/index.html';  // Переход на страницу корзины
+        });
+    } else {
+        console.log("Элемент корзины не найден");
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Находим элемент с изображением корзины по alt атрибуту или с использованием класса/индекса, если атрибуты уникальны
+    const wishLinkLink = document.querySelector('img[alt="Wishlist Icon"]');
+
+    // Проверяем, найден ли элемент
+    if (wishLink) {
+        wishLink.addEventListener('click', function(event) {
+            event.preventDefault();  // Останавливаем стандартное поведение ссылки
+            window.location.href = '../wishlist/index.html';  // Переход на страницу корзины
+        });
+    } else {
+        console.log("Элемент сердечечка не найден");
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    const userLink = document.querySelector('img[alt="User Icon"]');
+
+    // Проверяем, найден ли элемент
+    if (userLink) {
+        userLink.addEventListener('click', function(event) {
+            event.preventDefault();  // Останавливаем стандартное поведение ссылки
+            window.location.href = '../user/buyer/index.html';  
+        });
+    } else {
+        console.log("Элемент юзера не найден");
+    }
+});
+
+
+
 // Данные для разных секций
 const newProducts = [
     { image: '../../assets/images/product1.jpg', category: 'Подвески - мягкие игрушки', title: 'CLEAN+ cream wax', price: '570 ₽' },
@@ -58,3 +104,5 @@ function addCategoriesToSection(sectionId, categories) {
 addProductsToSection('new-products-list', newProducts);
 addCategoriesToSection('category-list', categories);
 addProductsToSection('recommendations-list', recommendations);
+
+

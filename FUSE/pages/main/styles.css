@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Manrope', sans-serif;
-    background-color: #fff;
+    background-color: #fafafa;
     color: #2F2F2F;
 }
 
@@ -15,6 +15,7 @@ main {
 }
 
 .navbar {
+    background-color: #fff;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -23,7 +24,13 @@ main {
 }
 
 .logo {
+    transition: transform 0.3s;
     max-width: 120px;
+}
+
+.logo:hover {
+    transform: scale(1.1);
+    cursor: pointer;
 }
 
 .nav-icons {
@@ -34,6 +41,12 @@ main {
 .nav-icons img {
     width: 24px;
     height: 24px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.nav-icons img:hover {
+    transform: scale(1.1);
 }
 
 .new-products, .categories, .recommendations {
@@ -58,7 +71,7 @@ main {
 
 .product-item, .category-item {
     font-family: 'Manrope', sans-serif;
-    background-color: #fff;
+    background-color: #fafafa;
     padding: 3px;
     flex: 1;
     text-align: right; /* Выравнивание по правому краю */

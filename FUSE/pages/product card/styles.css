@@ -1,0 +1,187 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Manrope', sans-serif;
+    background-color: #fafafa;
+    color: #2F2F2F;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    border-bottom: 1px solid #ddd;
+    background-color: #fff;
+}
+
+.logo {
+    max-width: 120px;
+    transition: transform 0.3s;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+}
+
+.nav-icons {
+    display: flex;
+    gap: 30px;
+}
+
+.nav-icons img {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.nav-icons img:hover {
+    transform: scale(1.1);
+}
+
+main {
+    padding: 40px;
+}
+
+.product {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.product-image img {
+    max-width: 400px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.product-details {
+    max-width: 600px;
+}
+
+.product-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.product-description {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.product-price {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.add-to-cart-button {
+    margin-top: -4px;
+    font-family: manrope;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    background-color: #2f2f2f; /* цвет кнопки */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.add-to-cart-button:hover {
+    background-color: #333; /* цвет при наведении */
+    transform: scale(1);
+}
+
+.reviews {
+    margin-top: 40px;
+}
+
+.reviews h2 {
+    font-size: 36px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.review {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.review p {
+    font-size: 16px;
+    color: #555;
+    margin-top: 5px;
+}
+
+.reviews-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.add-review-button {
+    padding: 10px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #2F2F2F;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.add-review-button:hover {
+    background-color: #333; /* цвет кнопки при наведении */
+}
+
+.review-form {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.review-form input, .review-form textarea, .review-form select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-family: 'Manrope', sans-serif;
+}
+
+.review-form button {
+    margin-top: 15px;
+    padding: 10px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #2F2F2F;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.review-form button:hover {
+    background-color: #333;
+}
+

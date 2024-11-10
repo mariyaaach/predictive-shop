@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Manrope', sans-serif;
-    background-color: #fff;
+    background-color: #fafafa;
     color: #2F2F2F;
 }
 
@@ -16,10 +16,18 @@ body {
     align-items: center;
     padding: 20px 40px;
     border-bottom: 1px solid #e0e0e0;
+    background-color: #fff;
+    transition: box-shadow 0.3s;
 }
 
 .logo {
+    transition: transform 0.3s;
     max-width: 120px;
+}
+
+.logo:hover {
+    transform: scale(1.1);
+    cursor: pointer;
 }
 
 .nav-icons {
@@ -30,6 +38,12 @@ body {
 .nav-icons img {
     width: 24px;
     height: 24px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.nav-icons img:hover {
+    transform: scale(1.1);
 }
 
 main {
@@ -60,6 +74,13 @@ main {
     border: 1px solid #e0e0e0;
     border-radius: 15px;
     background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s, transform 0.2s;
+}
+
+.cart-item:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-4px);
 }
 
 .cart-item-image {
@@ -91,6 +112,7 @@ main {
 .cart-item-details .price {
     font-size: 18px;
     color: #2F2F2F;
+    font-weight: bold;
 }
 
 .quantity-control {
@@ -107,6 +129,12 @@ main {
     font-size: 16px;
     border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.quantity-control button:hover {
+    background-color: #d0d0d0;
+    transform: scale(1.1);
 }
 
 .quantity-control .quantity {
@@ -145,9 +173,14 @@ main {
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.2s;
 }
 
 .checkout-btn:hover {
     background-color: #555;
+    transform: scale(1.05);
+}
+
+.checkout-btn:active {
+    transform: scale(0.95);
 }

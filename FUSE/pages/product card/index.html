@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Товар</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+    <nav class="navbar">
+        <img src="../../../assets/svg/logo.svg" alt="Essencia Logo" class="logo" id="logo">
+        <div class="nav-icons">
+            <img src="../../../assets/svg/user.svg" alt="User Icon">
+            <img src="../../../assets/svg/wishlist.svg" alt="Wishlist Icon">
+            <img src="../../../assets/svg/cart.svg" alt="Cart Icon">
+        </div>
+    </nav>
+</header>
+
+<main>
+    <section class="product">
+        <div class="product-image">
+            <img src="path/to/your/product-image.jpg" alt="Product Image">
+        </div>
+        <div class="product-details">
+            <h1 class="product-title">Название товара</h1>
+            <p class="product-description">Здесь находится описание товара. Оно включает основные характеристики, особенности и преимущества, которые заинтересуют покупателей.</p>
+            <h2 class="product-price">Цена: 1250 ₽</h2>
+            <button class="add-to-cart-button">Добавить в корзину</button>
+        </div>
+    </section>
+
+    <section class="reviews">
+        <div class="reviews-header">
+            <h2>Отзывы</h2>
+            <button class="add-review-button" onclick="toggleReviewForm()">Добавить отзыв</button>
+        </div>
+        <div class="review-list" id="reviewList">
+            <div class="review">
+                <p><strong>Александр:</strong> Отличный товар! Очень доволен покупкой.</p>
+                <p><strong>Оценка:</strong> ★★★★★</p>
+            </div>
+            <div class="review">
+                <p><strong>Мария:</strong> Доставили быстро, качество хорошее. Рекомендую!</p>
+                <p><strong>Оценка:</strong> ★★★★☆</p>
+            </div>
+        </div>
+        
+        <!-- Форма добавления нового отзыва -->
+        <div class="review-form" id="reviewForm" style="display: none;">
+            <input type="text" id="reviewerName" placeholder="Ваше имя">
+            <textarea id="reviewText" placeholder="Ваш отзыв"></textarea>
+            <select id="reviewRating">
+                <option value="5">★★★★★</option>
+                <option value="4">★★★★☆</option>
+                <option value="3">★★★☆☆</option>
+                <option value="2">★★☆☆☆</option>
+                <option value="1">★☆☆☆☆</option>
+            </select>
+            <button onclick="addReview()">Отправить отзыв</button>
+        </div>
+    </section>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

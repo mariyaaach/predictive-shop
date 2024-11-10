@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет продавца</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+    <nav class="navbar">
+        <img src="../../../assets/svg/logo.svg" alt="Essencia Logo" class="logo" id="logo">
+        <div class="nav-icons">
+            <img src="../../../assets/svg/user.svg" alt="User Icon">
+            <img src="../../../assets/svg/wishlist.svg" alt="Wishlist Icon">
+            <img src="../../../assets/svg/cart.svg" alt="Cart Icon">
+        </div>
+    </nav>
+</header>
+
+<main>
+    <section class="profile">
+        <h2>Личный кабинет продавца</h2>
+        <div class="user-info">
+            <h3>Имя: <span id="userName">Иван Иванов</span></h3>
+            <h3>Email: <span id="userEmail">ivan.ivanov@example.com</span></h3>
+            <h3>ИНН: <span id="userINN">58475963475</span></h3>
+            <button id="editButton">Внести изменения</button>
+            <button id="saveButton" style="display: none;">Сохранить</button>
+        </div>
+    </section>
+
+    <section class="product-stats">
+        <h2>Популярные товары</h2>
+        <div class="product-list">
+            <div class="product-item">
+                <img src="path/to/scarf.jpg" alt="Шерстяной шарф" class="product-image">
+                <h4>Товар: Шерстяной шарф</h4>
+                <p>Цена: 1500 ₽</p>
+                <p>Просмотры: 350</p>
+                <p>Купили: 120 раз</p>
+                <p>Отзывы: <span class="positive">Положительных: 85%</span>, <span class="negative">Отрицательных: 15%</span></p>
+            </div>
+            <div class="product-item">
+                <img src="path/to/gloves.jpg" alt="Кожаные перчатки" class="product-image">
+                <h4>Товар: Кожаные перчатки</h4>
+                <p>Цена: 2000 ₽</p>
+                <p>Просмотры: 280</p>
+                <p>Купили: 90 раз</p>
+                <p>Отзывы: <span class="positive">Положительных: 70%</span>, <span class="negative">Отрицательных: 30%</span></p>
+            </div>
+        </div>
+    </section>
+
+    <section class="predictive-section">
+        <h2>Предиктивный анализ продаж</h2>
+        <div class="analytics">
+            <div class="analytics-item">
+                <h3>Наиболее популярный товар: Шерстяной шарф</h3>
+                <p>Рекомендуется увеличить запасы для сезона зима</p>
+            </div>
+            <div class="analytics-item">
+                <h3>Наибольшее количество положительных отзывов: Кожаные перчатки</h3>
+                <p>Рекомендуется к продвижению</p>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

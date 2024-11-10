@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+    <nav class="navbar">
+        <img src="../../../assets/svg/logo.svg" alt="Essencia Logo" class="logo" id="logo">
+        <div class="nav-icons">
+            <img src="../../../assets/svg/user.svg" alt="User Icon">
+            <img src="../../../assets/svg/wishlist.svg" alt="Wishlist Icon">
+            <img src="../../../assets/svg/cart.svg" alt="Cart Icon">
+        </div>
+    </nav>
+</header>
+
+<main>
+    <section class="profile">
+        <h2>Личный кабинет</h2>
+        <div class="user-info">
+            <h3>Имя: <span id="userName">Иван Иванов</span></h3>
+            <h3>Email: <span id="userEmail">ivan.ivanov@example.com</span></h3>
+            <h3>Телефон: <span id="userPhone">+7 912 345 67 89</span></h3>
+            <button id="editButton" onclick="enableEdit()">Внести изменения</button>
+            <button id="saveButton" onclick="saveChanges()" style="display: none;">Сохранить</button>
+        </div>
+    </section>
+
+    <section class="order-history">
+        <h2>История заказов</h2>
+        <div class="order-list">
+            <div class="order-item">
+                <h4>Заказ №12345</h4>
+                <p>Дата: 05.11.2024</p>
+                <p>Сумма: 1250 ₽</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="predictive-section">
+        <h2>Рекомендации по сезонам</h2>
+        <div class="seasonal-recommendations">
+            <div class="season">
+                <h3>Зима</h3>
+                <p>Самый популярный товар: <span id="product">Шерстяной шарф</span></p>
+            </div>
+            <div class="season">
+                <h3>Весна</h3>
+                <p>Самый популярный товар: <span id="product">Шерстяной шарф</span></p>
+            </div>
+            <div class="season">
+                <h3>Лето</h3>
+                <p>Самый популярный товар: <span id="product">Шерстяной шарф</span></p>
+            </div>
+            <div class="season">
+                <h3>Осень</h3>
+                <p>Самый популярный товар: <span id="product">Шерстяной шарф</span></p>
+            </div>
+        </div>
+    </section>     
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

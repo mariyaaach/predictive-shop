@@ -1,0 +1,147 @@
+/* Общие стили */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Manrope', sans-serif;
+    background-color: #fafafa;
+    color: #2F2F2F;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    border-bottom: 1px solid #ddd;
+    background-color: #fff;
+}
+
+.logo {
+    max-width: 120px;
+    transition: transform 0.3s;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+}
+
+.nav-icons {
+    display: flex;
+    gap: 30px;
+}
+
+.nav-icons img {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.nav-icons img:hover {
+    transform: scale(1.1);
+}
+
+main {
+    padding: 40px;
+}
+
+/* Профиль продавца */
+
+.profile h2, .product-stats h2, .predictive-section h2 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.user-info, .product-item, .analytics-item {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.user-info h3, .product-item h4, .analytics-item h3 {
+    font-size: 24px;
+    font-weight: 500;
+    color: #333;
+}
+
+.user-info button {
+    padding: 12px 20px;
+    font-family: Manrope;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #2F2F2F;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-top: 20px;
+}
+
+.user-info button:hover {
+    background-color: #333;
+}
+
+/* Секция товаров */
+
+.product-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.product-item {
+    position: relative;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    text-align: left; /* Центрирование содержимого */
+}
+
+.product-item:hover {
+    transform: translateY(-4px);
+}
+
+.product-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.positive {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.negative {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Предиктивный анализ */
+
+.analytics {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.analytics-item {
+    min-width: 200px;
+}
