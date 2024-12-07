@@ -20,18 +20,17 @@ if msg is not None:
     print(msg.value().decode('utf-8'))
 
 
+from sqlalchemy.orm import selectinload
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from fastapi import HTTPException, status, Depends
+from sqlalchemy import update,  func
+from . import models, schemas
+from .utils import get_password_hash
+from fastapi import HTTPException
 from passlib.context import CryptContext
 from jose import JWTError, jwt
-from datetime import timedelta, datetime, timezone
-from fastapi.security import OAuth2PasswordRequestForm
-
-from uuid import uuid4
-from .model import User
-from .schemas import UserCreate, UserOut
-from .database import get_db
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 # Настройки для токенов
@@ -43,15 +42,12 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-# Функция для хэширования паролей
-def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
-
-
-# Функция для проверки пароля
+# Функции для работы с паролями
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)
 
 # Создание токена
 def create_access_token(data: dict, expires_delta: timedelta = None):
@@ -70,64 +66,39 @@ def decode_access_token(token: str) -> Optional[dict]:
 
 
 
-# Регистрация пользователя
-async def register_user(user: UserCreate, db: AsyncSession):
-    # Проверка на уникальность
-    existing_user = await db.execute(
-        select(User).where((User.email == user.email) | (User.user_name == user.user_name))
+async def get_user_by_email(db: AsyncSession, email: str) -> models.User:
+    result = await db.execute(
+        select(models.Users)
+        .where(models.User.email == email)
     )
-    if existing_user.scalar():
-        raise HTTPException(status_code=400, detail="User with this email or username already exists.")
+    return result.scalar_one_or_none()
 
-    hashed_password = hash_password(user.password)
-    new_user = User(
-        user_id=uuid4(),
+async def create_user(db:AsyncSession, user: schemas.UserCreate):
+    hashed_password = get_password_hash(user.password) 
+    db_user = model.Users(
         user_name=user.user_name,
+        hashed_password=user.hashed_password,
         email=user.email,
-        hashed_password=hashed_password,
         role=user.role,
-        verified=False,
+        verified=user.verified,
     )
-    db.add(new_user)
+    db.add(db_user)
     await db.commit()
-    await db.refresh(new_user)
-    return new_user
+    await db.refresh(db_user)
 
+    db_profile = model.User_profiles(
+        user_id=user.user_id,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        phone=user.phone,
+        address=user.address
+    )
+    db.add(db_auth)
+    await db.commit()
+    await db.refresh(db_auth)
 
-# Авторизация пользователя
-async def login_user(form_data: OAuth2PasswordRequestForm, db: AsyncSession):
-    result = await db.execute(select(User).where(User.user_name == form_data.username))
-    user = result.scalar()
-    if not user or not verify_password(form_data.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
-        )
-    access_token = create_access_token(data={"sub": str(user.user_id)})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return db_user
 
-
-# Получение текущего пользователя
-async def get_current_user(token: str, db: AsyncSession = Depends(get_db)):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        result = await db.execute(select(User).where(User.user_id == user_id))
-        user = result.scalar()
-        if user is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        return user
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-
-# Инициализация
-from sqlalchemy.ext.asyncio import AsyncSession
-from .model import Base, User, UserProfile
-from .database import engine
-
-async def init_db():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+async def get_user(db: AsyncSession, user_id: int):
+    result = await db.execute(select(model.Users).where(model.Users.user_id == user_id))
+    return result.scalars().first()

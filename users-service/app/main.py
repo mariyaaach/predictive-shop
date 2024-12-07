@@ -1,36 +1,53 @@
+import uvicorn
 from fastapi import FastAPI, Depends
-from .services import register_user, login_user, get_current_user
+from . import model, services, schemas
 from .schemas import UserCreate, UserOut
-from .database import init_db, get_db
-from sqlalchemy.ext.asyncio import AsyncSession
+from .database import engine, get_db
+from .services import get_user_by_email, create_access_token, verify_password, get_current_user
+from sqlalchemy import update
+from contextlib import asynccontextmanager
+from sqlalchemy.orm import selectinload
+from sqlalchemy.future import select
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from typing import List
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Действия при запуске приложения
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
+    yield  # Приложение будет работать в этом месте
 
-# Настройка авторизации через OAuth2
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+    # Действия при завершении приложения
+    await engine.dispose()
 
+# Создание приложения
+app = FastAPI(lifespan=lifespan)
 
-# Регистрация пользователя
-@app.post("/register/", response_model=UserOut)
-async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
-    return await register_user(user, db)
+@app.post("/token", response_model=Token)
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(get_db)
+):
+    user = await services.get_user_by_email(db, form_data.username)
+    if not user or not verify_password(form_data.password, user.hash_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неверный email или пароль",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = create_access_token(data={"sub": str(user.user_id)})
+    return {"access_token": access_token, "token_type": "bearer"}
 
+@app.post("/users/", response_model=UserOut)
+async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
+    try:
+        existing_user = await db.execute(
+            select(Users).where((Users.email == user.email))
+        )
+        if existing_user.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="User with this email or phone already exists")
+        
+        new_user = await crud.create_user(db, user)
 
-# Авторизация пользователя
-@app.post("/login/")
-async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    return await login_user(form_data, db)
-
-
-# Получение данных текущего пользователя
-@app.get("/users/me/", response_model=UserOut)
-async def read_users_me(current_user: UserOut = Depends(get_current_user)):
-    return current_user
-
-
-# Функция для инициализации базы данных при старте приложения
-@app.on_event("startup")
-async def on_startup():
-    await init_db()
