@@ -24,7 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from fastapi import HTTPException, status, Depends
 from passlib.context import CryptContext
-from jose import jwt, JWTError
+from jose import JWTError, jwt
 from datetime import timedelta, datetime, timezone
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -32,6 +32,7 @@ from uuid import uuid4
 from .model import User
 from .schemas import UserCreate, UserOut
 from .database import get_db
+from typing import Optional
 
 # Настройки для токенов
 SECRET_KEY = "your_secret_key"
@@ -57,7 +58,16 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
+    to_encode["sub"] = str(data["sub"])
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def decode_access_token(token: str) -> Optional[dict]:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        return None
+
 
 
 # Регистрация пользователя
