@@ -1,40 +1,31 @@
-from pydantic import BaseModel, EmailStr
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Time, Text, DECIMAL, DateTime, Boolean
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime, timezone
 from uuid import UUID
-from typing import Optional
-from enum import Enum
-from datetime import datetime
 
-# Роли пользователей
-class UserRole(str, Enum):
-    CONSUMER = "consumer"
-    SELLER = "seller"
-    ADMIN = "admin"
+Base = declarative_base()
 
-class UserBase(BaseModel):
-    user_name: str
-    email: EmailStr
-    role: UserRole
+class Users(Base):
+    __tablename__ = 'users'
+    user_id = Column(UUID, primary_key=True, index=True)
+    user_name = Column(String(50), nullable=False)
+    hashed_password = Column(Text, nullable=False)
+    email = Column(String(100), unique=True, nullable=False, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now().replace(tzinfo=None))
+    role = Column(String(50), unique=True, nullable=False)
+    verified = Column(Boolean, nullable=False)
 
-class UserCreate(UserBase):
-    password: str
+    user_profile = relationship("User_profile", back_populates="Users")
 
-class UserOut(UserBase):
-    user_id: UUID
-    verified: bool
-    created_at: datetime
+class User_profiles:
+    __tablename__ = 'user_profile'
+    user_id = Column(UUID, ForeignKey('users.user_id'))
+    first_name = Column(String(50), nullable=False)
+    last_name = Column(String(50), nullable=False)
+    phone = Column(String(20))
+    address = Column(String(100))
 
-    class Config:
-        orm_mode = True
+    user = relationship("Users", back_populates = "user_profiles")
 
-class UserProfileBase(BaseModel):
-    first_name: str
-    last_name: str
-    address: Optional[str]
-    phone: Optional[str]
 
-class UserProfileOut(UserProfileBase):
-    class Config:
-        orm_mode = True
-
-class UserWithProfile(UserOut):
-    profile: Optional[UserProfileOut]
