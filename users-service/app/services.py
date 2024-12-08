@@ -25,8 +25,7 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import update,  func
-from . import models, schemas
-from .utils import get_password_hash
+from . import model, schemas
 from fastapi import HTTPException
 from passlib.context import CryptContext
 from jose import JWTError, jwt
@@ -66,10 +65,10 @@ def decode_access_token(token: str) -> Optional[dict]:
 
 
 
-async def get_user_by_email(db: AsyncSession, email: str) -> models.User:
+async def get_user_by_email(db: AsyncSession, email: str) -> model.User:
     result = await db.execute(
-        select(models.Users)
-        .where(models.User.email == email)
+        select(model.Users)
+        .where(model.User.email == email)
     )
     return result.scalar_one_or_none()
 
@@ -85,19 +84,20 @@ async def create_user(db:AsyncSession, user: schemas.UserCreate):
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
-
+    
     db_profile = model.User_profiles(
-        user_id=user.user_id,
-        first_name=user.first_name,
-        last_name=user.last_name,
-        phone=user.phone,
-        address=user.address
-    )
-    db.add(db_auth)
+            user_id=user.user_id,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            phone=user.phone,
+            address=user.address
+        )
+    db.add(db_profile)
     await db.commit()
-    await db.refresh(db_auth)
+    await db.refresh(db_profile)
 
     return db_user
+
 
 async def get_user(db: AsyncSession, user_id: int):
     result = await db.execute(select(model.Users).where(model.Users.user_id == user_id))

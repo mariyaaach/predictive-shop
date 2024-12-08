@@ -1,13 +1,15 @@
 import uvicorn
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException, status, logger
 from . import model, services, schemas
-from .schemas import UserCreate, UserOut
+from .model import Base, Users
+from .schemas import UserCreate, UserOut, Token
 from .database import engine, get_db
 from .services import get_user_by_email, create_access_token, verify_password, get_current_user
 from sqlalchemy import update
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import List
 
@@ -40,6 +42,7 @@ async def login_for_access_token(
     access_token = create_access_token(data={"sub": str(user.user_id)})
     return {"access_token": access_token, "token_type": "bearer"}
 
+
 @app.post("/users/", response_model=UserOut)
 async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     try:
@@ -49,5 +52,17 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
         if existing_user.scalar_one_or_none():
             raise HTTPException(status_code=400, detail="User with this email or phone already exists")
         
-        new_user = await crud.create_user(db, user)
+        new_user = await services.create_user(db, user)
+
+        return {
+            "user_id": new_user.user_id,
+            "first_name": new_user.fist_name,
+            "last_name": new_user.last_name,
+            "email": new_user.email,
+            "phone": new_user.phone,
+            "role": new_user.role
+        }
+    except Exception as e:
+        logger.error(f"Ошибка регистрации пользователя: {e}")
+        raise HTTPException(status_code=500, detail="Ошибка при создании пользователя")   
 

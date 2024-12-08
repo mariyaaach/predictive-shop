@@ -16,7 +16,7 @@ class Users(Base):
     role = Column(String(50), unique=True, nullable=False)
     verified = Column(Boolean, nullable=False)
 
-    user_profile = relationship("User_profile", back_populates="Users")
+    profile = relationship("User_profile", back_populates="Users")
 
 class User_profiles:
     __tablename__ = 'user_profile'
