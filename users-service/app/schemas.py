@@ -40,3 +40,22 @@ class UserOut(UserBase):
         orm_mode = True  # Указывает Pydantic, что данные будут приходить из SQLAlchemy-моделей
 
 
+class UserUpdate(BaseModel):
+    user_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    role: Optional[str] = None
+    verified: Optional[bool] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+
+
+class UserProfileOut(BaseModel):
+    first_name: str
+    last_name: str
+    phone: Optional[str]
+    address: Optional[str]
+
+    class Config:
+        orm_mode = True
