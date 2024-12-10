@@ -24,6 +24,7 @@ class UserBase(BaseModel):
     last_name: str
     phone: str
     address: str
+    verified: bool
 
 
 # Схема для создания нового пользователя

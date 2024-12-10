@@ -68,7 +68,8 @@ def decode_access_token(token: str) -> Optional[dict]:
 async def get_user_by_email(db: AsyncSession, email: str) -> model.User:
     result = await db.execute(
         select(model.Users)
-        .where(model.User.email == email)
+        .options(selectinload(model.Users.profile))
+        .where(model.Users.email == email)
     )
     return result.scalar_one_or_none()
 
@@ -76,7 +77,7 @@ async def create_user(db:AsyncSession, user: schemas.UserCreate):
     hashed_password = get_password_hash(user.password) 
     db_user = model.Users(
         user_name=user.user_name,
-        hashed_password=user.hashed_password,
+        hashed_password=hashed_password,
         email=user.email,
         role=user.role,
         verified=user.verified,
