@@ -1,23 +1,48 @@
-from confluent_kafka import Producer, Consumer
+import json
+from confluent_kafka import Consumer, Producer
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from .model import Users
 
-# Kafka Producer
-producer = Producer({'bootstrap.servers': 'kafka:9093'})
-
-# Отправка сообщения в Kafka
-producer.produce('my_topic', key='key', value='value')
-producer.flush()
-
-# Kafka Consumer
+# Kafka Consumer для получения запросов
 consumer = Consumer({
     'bootstrap.servers': 'kafka:9093',
-    'group.id': 'my_consumer_group',
+    'group.id': 'user_service_group',
     'auto.offset.reset': 'earliest'
 })
+consumer.subscribe(['user_service_request'])
 
-consumer.subscribe(['my_topic'])
-msg = consumer.poll(1.0)
-if msg is not None:
-    print(msg.value().decode('utf-8'))
+# Kafka Producer для отправки ответа
+producer = Producer({'bootstrap.servers': 'kafka:9093'})
+
+async def process_user_validation_request(db: AsyncSession):
+    """
+    Обрабатывает запросы на проверку пользователя через Kafka.
+
+    Args:
+        db (AsyncSession): Сессия базы данных.
+    """
+    while True:
+        msg = consumer.poll(1.0)  # Проверяем сообщения каждую секунду
+        if msg is None:
+            continue
+
+        data = json.loads(msg.value().decode('utf-8'))
+        user_id = data.get("user_id")
+        if not user_id:
+            continue
+
+        # Проверяем, существует ли пользователь с ролью `seller`
+        result = await db.execute(
+            select(Users).where(Users.user_id == user_id, Users.role == 'seller')
+        )
+        user = result.scalar_one_or_none()
+
+        # Формируем ответ
+        response = {"user_id": user_id, "valid": bool(user)}
+        producer.produce('user_service_response', key=user_id, value=json.dumps(response))
+        producer.flush()
+
 
 
 from sqlalchemy.orm import selectinload
@@ -78,7 +103,7 @@ async def get_user_by_email(db: AsyncSession, email: str) -> model.User:
 async def create_user(db:AsyncSession, user: schemas.UserCreate):
     hashed_password = get_password_hash(user.password) 
     db_user = model.Users(
-        user_name=UUID(),
+        user_name=user.user_name,
         hashed_password=hashed_password,
         email=user.email,
         role=user.role,
