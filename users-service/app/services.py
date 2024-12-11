@@ -78,7 +78,7 @@ async def get_user_by_email(db: AsyncSession, email: str) -> model.User:
 async def create_user(db:AsyncSession, user: schemas.UserCreate):
     hashed_password = get_password_hash(user.password) 
     db_user = model.Users(
-        user_name=user.user_name,
+        user_name=UUID(),
         hashed_password=hashed_password,
         email=user.email,
         role=user.role,

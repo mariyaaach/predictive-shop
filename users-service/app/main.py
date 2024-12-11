@@ -13,6 +13,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import List
 from uuid import UUID
+from .services import process_user_validation_request
+import asyncio
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -27,6 +29,11 @@ async def lifespan(app: FastAPI):
 
 # Создание приложения
 app = FastAPI(lifespan=lifespan)
+
+@app.on_event("startup")
+async def startup_event():
+    db = await get_db().__anext__()
+    app.state.task = asyncio.create_task(process_user_validation_request(db))
 
 @app.post("/token", response_model=Token)
 async def login_for_access_token(
