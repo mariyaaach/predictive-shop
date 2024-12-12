@@ -13,5 +13,7 @@ COPY ./app /app
 ENV KAFKA_BROKER=kafka:9093
 ENV DATABASE_URL=postgresql://user:password@db:5432/users_db
 
+EXPOSE 8000
+
 # Запуск FastAPI приложения
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

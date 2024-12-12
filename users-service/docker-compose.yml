@@ -3,27 +3,29 @@ version: '3.9'
 services:
   backend:
     build:
-      context: ./app
+      context: .
       dockerfile: Dockerfile
     container_name: fastapi_backend
     ports:
       - "8000:8000"
     environment: 
-      #Нада менять под нашу бд
-      DATABASE_URL: postgresql+asyncpg://login:password@db:5432/name_bd
+      PYTHONPATH: /app
+      DATABASE_URL: postgresql+asyncpg://login:password@db:5434/name_bd
     depends_on:
       - db
+    volumes:
+    - ./app:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
 
   db:
     image: postgres:15
-    #И тута
     container_name: postgres_db
     environment:
       POSTGRES_USER: login
       POSTGRES_PASSWORD: password
       POSTGRES_DB: name_bd
     ports:
-      - "5433:5433"
+      - "5434:5434"  # Вернул стандартный порт PostgreSQL
     volumes:
       - db_data:/var/lib/postgresql/data 
 
