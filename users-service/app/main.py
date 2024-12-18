@@ -1,19 +1,19 @@
 import uvicorn
 from fastapi import FastAPI, Depends, HTTPException, status, logger
-from app import model, services, schemas
-from app.model import Base, Users, User_profiles
-from app.schemas import UserCreate, UserOut, Token, UserUpdate
-from app.database import engine, get_db
-from app.services import get_user_by_email, create_access_token, verify_password, get_current_user
+from .model  import Base, Users, User_profiles
+from .schemas import UserCreate, UserOut, Token, UserUpdate
+from .database import engine, get_db
+from .services import get_user_by_email, create_access_token, verify_password, get_current_user
 from sqlalchemy import update
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from . import services
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import List
 from uuid import UUID
-from app.services import process_user_validation_request
+from .services import process_user_validation_request
 import asyncio
 
 @asynccontextmanager

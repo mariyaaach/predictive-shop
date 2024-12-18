@@ -1,19 +1,18 @@
-# Dockerfile для users-service
+# Базовый образ
 FROM python:3.10-slim
 
-# Установка зависимостей
+# Устанавливаем рабочую директорию
 WORKDIR /app
-COPY ./requirements.txt /app/requirements.txt
+
+# Копируем файл с зависимостями
+COPY requirements.txt ./requirements.txt
+
+# Устанавливаем зависимости
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копирование исходного кода
-COPY ./app /app
+# Копируем исходный код
+COPY app ./app
 
-# Установка переменных окружения
-ENV KAFKA_BROKER=kafka:9093
-ENV DATABASE_URL=postgresql://user:password@db:5432/users_db
 
-EXPOSE 8000
-
-# Запуск FastAPI приложения
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Указываем, откуда запускать приложение
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
