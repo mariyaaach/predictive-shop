@@ -37,7 +37,7 @@ class UserOut(UserBase):
     created_at: datetime
 
     class Config:
-        orm_mode = True  # Указывает Pydantic, что данные будут приходить из SQLAlchemy-моделей
+        from_attributes = True  # Указывает Pydantic, что данные будут приходить из SQLAlchemy-моделей
 
 
 class UserUpdate(BaseModel):
@@ -58,4 +58,4 @@ class UserProfileOut(BaseModel):
     address: Optional[str]
 
     class Config:
-        orm_mode = True
+        from_attributes = True

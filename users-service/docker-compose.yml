@@ -8,13 +8,14 @@ services:
     container_name: fastapi_backend
     working_dir: /app
     environment:
-      - DATABASE_URL=postgresql+asyncpg://db-user:db-password@postgres-db:5432/name_bd
+      - DATABASE_URL=postgresql+asyncpg://db-user:db-password@postgres-db:5434/name_bd
       - KAFKA_BROKER=kafka:9092
       - MINIO_URL=http://minio:9000
       - MINIO_ACCESS_KEY=root_user
       - MINIO_SECRET_KEY=root_password
+      - PYTHONPATH=/app
     volumes:
-      - ./app:/app
+      - ./app:/app  # Монтируем содержимое папки app в /app
     ports:
       - "8000:8000"
     depends_on:
@@ -23,5 +24,4 @@ services:
       - minio
     networks:
       - shared
-
-
+    command: uvicorn main:app --host 0.0.0.0 --port 8000

@@ -2,18 +2,28 @@ import json
 from confluent_kafka import Consumer, Producer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from .model import Users
+from model import Users
 
 # Kafka Consumer для получения запросов
 consumer = Consumer({
-    'bootstrap.servers': 'kafka:9093',
+    'bootstrap.servers': 'kafka:9092',
     'group.id': 'user_service_group',
-    'auto.offset.reset': 'earliest'
+    'auto.offset.reset': 'earliest',
+    'security.protocol': 'SASL_PLAINTEXT',
+    'sasl.mechanism': 'PLAIN',
+    'sasl.username': 'admin',
+    'sasl.password': 'admin-secret'
 })
 consumer.subscribe(['user_service_request'])
 
 # Kafka Producer для отправки ответа
-producer = Producer({'bootstrap.servers': 'kafka:9093'})
+producer = Producer({
+    'bootstrap.servers': 'kafka:9092',
+    'security.protocol': 'SASL_PLAINTEXT',
+    'sasl.mechanism': 'PLAIN',
+    'sasl.username': 'admin',
+    'sasl.password': 'admin-secret'
+})
 
 async def process_user_validation_request(db: AsyncSession):
     """
@@ -50,8 +60,8 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import update,  func
-from . import model, schemas
-from .model import Users
+from model import Users, User_profiles
+from schemas import UserCreate, UserUpdate
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from jose import JWTError, jwt
@@ -92,17 +102,17 @@ def decode_access_token(token: str) -> Optional[dict]:
 
 
 
-async def get_user_by_email(db: AsyncSession, email: str) -> model.User:
+async def get_user_by_email(db: AsyncSession, email: str) -> Users:
     result = await db.execute(
-        select(model.Users)
-        .options(selectinload(model.Users.profile))
-        .where(model.Users.email == email)
+        select(Users)
+        .options(selectinload(Users.profile))
+        .where(Users.email == email)
     )
     return result.scalar_one_or_none()
 
-async def create_user(db:AsyncSession, user: schemas.UserCreate):
+async def create_user(db:AsyncSession, user: UserCreate):
     hashed_password = get_password_hash(user.password) 
-    db_user = model.Users(
+    db_user = Users(
         user_name=user.user_name,
         hashed_password=hashed_password,
         email=user.email,
@@ -113,7 +123,7 @@ async def create_user(db:AsyncSession, user: schemas.UserCreate):
     await db.commit()
     await db.refresh(db_user)
     
-    db_profile = model.User_profiles(
+    db_profile = User_profiles(
             user_id=user.user_id,
             first_name=user.first_name,
             last_name=user.last_name,
@@ -128,14 +138,14 @@ async def create_user(db:AsyncSession, user: schemas.UserCreate):
 
 
 async def get_user(db: AsyncSession, user_id: int):
-    result = await db.execute(select(model.Users).where(model.Users.user_id == user_id))
+    result = await db.execute(select(Users).where(Users.user_id == user_id))
     return result.scalars().first()
 
 
 async def update_user_data(
     db: AsyncSession,
     user_id: UUID,
-    updates: schemas.UserUpdate
+    updates: UserUpdate
 ) -> Users:
     
     result = await db.execute(
