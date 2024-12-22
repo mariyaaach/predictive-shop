@@ -102,16 +102,18 @@ def decode_access_token(token: str) -> Optional[dict]:
 
 
 
-async def get_user_by_email(db: AsyncSession, email: str) -> Users:
+async def get_user_by_user_name(db: AsyncSession, user_name: str) -> Users:
     result = await db.execute(
         select(Users)
         .options(selectinload(Users.profile))
-        .where(Users.email == email)
+        .where(Users.user_name == user_name)
     )
     return result.scalar_one_or_none()
 
-async def create_user(db:AsyncSession, user: UserCreate):
-    hashed_password = get_password_hash(user.password) 
+async def create_user(db: AsyncSession, user: UserCreate):
+    hashed_password = get_password_hash(user.password)
+
+    # Создаем пользователя
     db_user = Users(
         user_name=user.user_name,
         hashed_password=hashed_password,
@@ -121,15 +123,16 @@ async def create_user(db:AsyncSession, user: UserCreate):
     )
     db.add(db_user)
     await db.commit()
-    await db.refresh(db_user)
-    
+    await db.refresh(db_user)  # Обновляем db_user, чтобы получить user_id
+
+    # Создаем профиль пользователя
     db_profile = User_profiles(
-            user_id=user.user_id,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            phone=user.phone,
-            address=user.address
-        )
+        user_id=db_user.user_id,  # Используем id из db_user
+        first_name=user.first_name,
+        last_name=user.last_name,
+        phone=user.phone,
+        address=user.address,
+    )
     db.add(db_profile)
     await db.commit()
     await db.refresh(db_profile)
@@ -143,14 +146,14 @@ async def get_user(db: AsyncSession, user_id: int):
 
 
 async def update_user_data(
-    db: AsyncSession,
-    user_id: UUID,
-    updates: UserUpdate
+        db: AsyncSession,
+        user_id: UUID,
+        updates: UserUpdate
 ) -> Users:
-    
+    # Находим пользователя с профилем
     result = await db.execute(
         select(Users)
-        .options(selectinload(Users.profile))
+        .options(selectinload(Users.profile))  # Загружаем профиль
         .where(Users.user_id == user_id)
     )
     db_user = result.scalar_one_or_none()
@@ -161,7 +164,7 @@ async def update_user_data(
             detail="User not found"
         )
 
-    # Если приходят данные для профиля, но профиль отсутствует, выбрасываем ошибку
+    # Если приходят данные для профиля, но профиль отсутствует
     if any([updates.first_name, updates.last_name, updates.phone, updates.address]) and not db_user.profile:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -191,6 +194,15 @@ async def update_user_data(
 
     # Сохраняем изменения
     await db.commit()
-    await db.refresh(db_user)
 
-    return db_user
+    # Создаем финальный объект с данными пользователя и профиля
+    return UserUpdate(
+        user_name=db_user.user_name,
+        email=db_user.email,
+        role=db_user.role,
+        verified=db_user.verified,
+        first_name=db_user.profile.first_name if db_user.profile else None,
+        last_name=db_user.profile.last_name if db_user.profile else None,
+        phone=db_user.profile.phone if db_user.profile else None,
+        address=db_user.profile.address if db_user.profile else None
+    )

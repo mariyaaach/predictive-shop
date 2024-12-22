@@ -16,7 +16,6 @@ class TokenData(BaseModel):
 
 # Схема для базовой информации о пользователе
 class UserBase(BaseModel):
-    user_id: UUID
     user_name: str
     email: EmailStr
     role: str
@@ -26,13 +25,13 @@ class UserBase(BaseModel):
     address: str
     verified: bool
 
-
 # Схема для создания нового пользователя
 class UserCreate(UserBase):
-    password: str 
+    password: str
 
-# Схема для отображения информации о пользователе (например, в ответах API)
+# Схема для отображения информации о пользователе
 class UserOut(UserBase):
+    user_id: UUID
     verified: bool
     created_at: datetime
 
@@ -49,6 +48,9 @@ class UserUpdate(BaseModel):
     last_name: Optional[str] = None
     phone: Optional[str] = None
     address: Optional[str] = None
+
+    class Config:
+        orm_mode = True
 
 
 class UserProfileOut(BaseModel):

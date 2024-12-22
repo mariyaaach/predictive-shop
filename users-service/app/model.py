@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import Column, String, Text, DECIMAL, DateTime, Boolean, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID  # Использование UUID для PostgreSQL
 from sqlalchemy.orm import relationship
@@ -8,11 +10,11 @@ Base = declarative_base()
 
 class Users(Base):
     __tablename__ = 'users'
-    user_id = Column(UUID(as_uuid=True), primary_key=True, index=True)  # Указываем as_uuid=True для корректной работы
+    user_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # Генерация UUID
     user_name = Column(String(50), nullable=False, unique=True)
     hashed_password = Column(Text, nullable=False)
     email = Column(String(100), unique=True, nullable=False, index=True)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=datetime.utcnow)  # Use UTC by default
     role = Column(String(50), nullable=False)
     verified = Column(Boolean, nullable=False, default=False)
 

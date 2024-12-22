@@ -5,9 +5,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# DATABASE_URL берется из переменных окружения, которые передаются в docker-compose
-#DATABASE_URL = os.getenv("DATABASE_URL")
-DATABASE_URL = "postgresql+asyncpg://db-user:db-password@postgres-db:5432/name_bd"
+ # DATABASE_URL берется из переменных окружения, которые передаются в docker-compose
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 
