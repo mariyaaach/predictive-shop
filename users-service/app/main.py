@@ -13,7 +13,7 @@ from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import List
-from uuid import UUID
+from sqlalchemy import Integer
 from services import process_user_validation_request
 import asyncio
 from services import get_user_by_user_name
@@ -21,6 +21,8 @@ from services import create_user as create_new_user
 from services import create_access_token
 from services import update_user_data
 import logging
+from services import send_registration_message
+from services import process_user_validation_request
 
 # Настройка логгера
 logging.basicConfig(level=logging.INFO)
@@ -59,6 +61,7 @@ async def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(data={"sub": str(user.user_id)})
+
     return {"access_token": access_token, "token_type": "bearer"}
 
 
@@ -91,6 +94,8 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
         # Проверяем, что профиль загрузился корректно
         if not full_user or not full_user.profile:
             raise HTTPException(status_code=500, detail="Profile data not found")
+        # Отправляем сообщение в Kafka о регистрации
+        await send_registration_message(full_user.user_id)
 
         # Возвращаем данные пользователя с профилем
         return {
@@ -113,7 +118,7 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
 
 @app.put("/users/{user_id}", response_model=UserUpdate)
 async def update_user(
-    user_id: UUID,
+    user_id: int,
     updates: UserUpdate,
     db: AsyncSession = Depends(get_db)
 ):

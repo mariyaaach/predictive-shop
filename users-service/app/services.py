@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from model import Users
 
-# Kafka Consumer для получения запросов
+# Настройки Kafka Consumer и Producer
 consumer = Consumer({
     'bootstrap.servers': 'kafka:9092',
     'group.id': 'user_service_group',
@@ -14,9 +14,7 @@ consumer = Consumer({
     'sasl.username': 'admin',
     'sasl.password': 'admin-secret'
 })
-consumer.subscribe(['user_service_request'])
 
-# Kafka Producer для отправки ответа
 producer = Producer({
     'bootstrap.servers': 'kafka:9092',
     'security.protocol': 'SASL_PLAINTEXT',
@@ -25,9 +23,16 @@ producer = Producer({
     'sasl.password': 'admin-secret'
 })
 
+# Подписка на топик user_service_request для проверки пользователя
+consumer.subscribe(['user_service_request'])
+
+# Подписка на топик user.verified для обработки подтверждения верификации
+consumer.subscribe(['user.verified'])
+
 async def process_user_validation_request(db: AsyncSession):
     """
     Обрабатывает запросы на проверку пользователя через Kafka.
+    Также слушает подтверждения верификации и обновляет статус пользователя.
 
     Args:
         db (AsyncSession): Сессия базы данных.
@@ -37,21 +42,66 @@ async def process_user_validation_request(db: AsyncSession):
         if msg is None:
             continue
 
-        data = json.loads(msg.value().decode('utf-8'))
-        user_id = data.get("user_id")
-        if not user_id:
-            continue
+        # Обработка сообщений из топика user_service_request
+        if msg.topic() == 'user_service_request':
+            data = json.loads(msg.value().decode('utf-8'))
+            user_id = data.get("user_id")
+            if not user_id:
+                continue
 
-        # Проверяем, существует ли пользователь с ролью `seller`
-        result = await db.execute(
-            select(Users).where(Users.user_id == user_id, Users.role == 'seller')
-        )
-        user = result.scalar_one_or_none()
+            # Проверяем, существует ли пользователь с ролью `seller`
+            result = await db.execute(
+                select(Users).where(Users.user_id == user_id, Users.role == 'seller')
+            )
+            user = result.scalar_one_or_none()
 
-        # Формируем ответ
-        response = {"user_id": user_id, "valid": bool(user)}
-        producer.produce('user_service_response', key=user_id, value=json.dumps(response))
-        producer.flush()
+            # Формируем ответ
+            response = {"user_id": user_id, "valid": bool(user)}
+            producer.produce('user_service_response', key=str(user_id).encode('utf-8'), value=json.dumps(response))
+            producer.flush()
+
+        # Обработка сообщений из топика user.verified
+        elif msg.topic() == 'user.verified':
+            data = json.loads(msg.value().decode('utf-8'))
+            user_id = data.get("user_id")
+            if not user_id:
+                continue
+
+            # Обновляем статус пользователя на "verified"
+            try:
+                result = await db.execute(
+                    select(Users).where(Users.user_id == user_id)
+                )
+                user = result.scalar_one_or_none()
+
+                if not user:
+                    raise HTTPException(status_code=404, detail="User not found")
+
+                user.verified = True  # Устанавливаем статус verified
+
+                # Сохраняем изменения в базе
+                await db.commit()
+                print(f"User {user_id} verified and status updated in the database.")
+
+            except Exception as e:
+                print(f"Error updating user verification status: {e}")
+                await db.rollback()
+
+async def send_registration_message(user_id):
+    """
+    Отправляет сообщение в топик user.registration при регистрации нового пользователя.
+
+    Args:
+        user_id (int): Идентификатор пользователя.
+    """
+    message = {
+        "user_id": user_id,
+        "status": "registered"
+    }
+    # Отправка сообщения в Kafka
+    producer.produce('user.registration', key=str(user_id).encode('utf-8'), value=json.dumps(message))
+    producer.flush()
+
 
 
 
@@ -147,7 +197,7 @@ async def get_user(db: AsyncSession, user_id: int):
 
 async def update_user_data(
         db: AsyncSession,
-        user_id: UUID,
+        user_id: int,
         updates: UserUpdate
 ) -> Users:
     # Находим пользователя с профилем

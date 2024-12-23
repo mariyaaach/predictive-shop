@@ -5,7 +5,6 @@
     environment:
       POSTGRES_USER: db-user
       POSTGRES_PASSWORD: db-password
-      POSTGRES_LOGGING: 'log_connections=on log_disconnections=on'
     healthcheck:
       test: /usr/bin/pg_isready
       interval: 5s

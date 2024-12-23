@@ -31,7 +31,7 @@ class UserCreate(UserBase):
 
 # Схема для отображения информации о пользователе
 class UserOut(UserBase):
-    user_id: UUID
+    user_id: int
     verified: bool
     created_at: datetime
 

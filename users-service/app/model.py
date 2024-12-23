@@ -4,13 +4,14 @@ from sqlalchemy import Column, String, Text, DECIMAL, DateTime, Boolean, Foreign
 from sqlalchemy.dialects.postgresql import UUID  # Использование UUID для PostgreSQL
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime, timezone
+from datetime import datetime
+from sqlalchemy import Integer
 
 Base = declarative_base()
 
 class Users(Base):
     __tablename__ = 'users'
-    user_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # Генерация UUID
+    user_id = Column(Integer, primary_key=True, autoincrement=True)  # Генерация UUID
     user_name = Column(String(50), nullable=False, unique=True)
     hashed_password = Column(Text, nullable=False)
     email = Column(String(100), unique=True, nullable=False, index=True)
@@ -24,7 +25,7 @@ class Users(Base):
 
 class User_profiles(Base):
     __tablename__ = 'user_profiles'
-    user_id = Column(UUID(as_uuid=True), ForeignKey('users.user_id'), primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.user_id'), primary_key=True, index=True)
     first_name = Column(String(50), nullable=False)
     last_name = Column(String(50), nullable=False)
     phone = Column(String(20), nullable=True)
