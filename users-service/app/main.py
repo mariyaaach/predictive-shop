@@ -96,6 +96,7 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
             raise HTTPException(status_code=500, detail="Profile data not found")
         # Отправляем сообщение в Kafka о регистрации
         await send_registration_message(full_user.user_id)
+        logger.info("Отправили в кафку в топик register message")
 
         # Возвращаем данные пользователя с профилем
         return {

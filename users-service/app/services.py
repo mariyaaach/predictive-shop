@@ -1,8 +1,14 @@
 import json
+import logging
+
 from confluent_kafka import Consumer, Producer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from model import Users
+from logging import log
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Настройки Kafka Consumer и Producer
 consumer = Consumer({
@@ -23,11 +29,7 @@ producer = Producer({
     'sasl.password': 'admin-secret'
 })
 
-# Подписка на топик user_service_request для проверки пользователя
-consumer.subscribe(['user_service_request'])
-
-# Подписка на топик user.verified для обработки подтверждения верификации
-consumer.subscribe(['user.verified'])
+consumer.subscribe(['user_service_request', 'user.verified'])
 
 async def process_user_validation_request(db: AsyncSession):
     """
@@ -44,7 +46,9 @@ async def process_user_validation_request(db: AsyncSession):
 
         # Обработка сообщений из топика user_service_request
         if msg.topic() == 'user_service_request':
+            logger.log("Пришло в топик service_req")
             data = json.loads(msg.value().decode('utf-8'))
+            logger.log("Парсим дату " + data)
             user_id = data.get("user_id")
             if not user_id:
                 continue
@@ -55,10 +59,10 @@ async def process_user_validation_request(db: AsyncSession):
             )
             user = result.scalar_one_or_none()
 
-            # Формируем ответ
-            response = {"user_id": user_id, "valid": bool(user)}
-            producer.produce('user_service_response', key=str(user_id).encode('utf-8'), value=json.dumps(response))
-            producer.flush()
+            # Формирование ответа
+            response = {"user_id": user_id, "valid": bool(user), "user_name": user.user_name, "correlation_id": str(user_id)}
+            await producer.produce('user_service_response', key=str(user_id).encode('utf-8'), value=json.dumps(response).encode('utf-8'))
+            await producer.flush()
 
         # Обработка сообщений из топика user.verified
         elif msg.topic() == 'user.verified':
