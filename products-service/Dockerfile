@@ -1,20 +1,17 @@
-# Используем базовый образ Python
-FROM python:3.10-slim
+    # Базовый образ
+    FROM python:3.10-slim
 
-# Устанавливаем рабочую директорию
-WORKDIR /app
+    # Устанавливаем рабочую директорию
+    WORKDIR /app
 
-# Копируем файлы requirements
-COPY requirements.txt .
+    # Копируем файл с зависимостями
+    COPY requirements.txt ./requirements.txt
 
-# Устанавливаем зависимости
-RUN pip install --no-cache-dir -r requirements.txt
+    # Устанавливаем зависимости
+    RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем код приложения
-COPY . .
+    # Копируем содержимое папки `app` в текущую рабочую директорию
+    COPY app/ ./  
 
-# Открываем порт для доступа к FastAPI
-EXPOSE 8000
-
-# Запускаем приложение
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+    # Указываем команду запуска
+    CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

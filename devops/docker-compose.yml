@@ -5,3 +5,4 @@
   - './kafka/docker-compose.kafka.yml'
   - './kafka/docker-compose.zookeeper.yml'
   - '../users-service/docker-compose.yml'
+  - '../products-service/docker-compose.yml'
