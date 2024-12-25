@@ -2,6 +2,8 @@
 import json
 import asyncio
 import os
+from asyncio import Queue
+
 from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -28,7 +30,8 @@ class KafkaService:
         self.group_id = 'product_service_group'
         self.producer: Optional[AIOKafkaProducer] = None
         self.consumer: Optional[AIOKafkaConsumer] = None
-        self.pending_requests = {}  # Инициализация словаря для отслеживания запросов
+        # Другие параметры
+        self.validation_responses = Queue()  # Очередь для хранения ответов
 
     async def start(self):
         # Инициализация продюсера
@@ -69,28 +72,22 @@ class KafkaService:
     async def consume_messages(self):
         try:
             async for msg in self.consumer:
+                logger.info(f"Получено сообщение: {msg.value.decode('utf-8')}")
                 data = json.loads(msg.value.decode('utf-8'))
-                correlation_id = data.get("correlation_id")
                 valid = data.get("valid")
                 user_name = data.get("user_name")
-                if correlation_id and correlation_id in self.pending_requests:
-                    self.pending_requests[correlation_id].set_result({
-                        "valid": valid,
-                        "seller_name": user_name  # Изменено на seller_name
-                    })
+                user_id = data.get("correlation_id")
+                if valid is not None and user_name is not None:
+                    await self.validation_responses.put({"user_id": user_id, "valid": valid, "user_name": user_name})
+                    logger.info(f"Валидация успешна: user_name={user_name}, valid={valid}")
+                else:
+                    logger.warning("Некорректное сообщение.")
         except Exception as e:
             logger.error(f"Error consuming messages: {e}")
 
-    # Для обработки запросов на валидацию
     async def validate_user(self, user_id: int) -> Optional[dict]:
-        correlation_id = str(user_id)  # Используем user_id как correlation_id для простоты
-        loop = asyncio.get_event_loop()
-        future = loop.create_future()
-        self.pending_requests[correlation_id] = future
-
         message = {
-            "user_id": user_id,
-            "correlation_id": correlation_id
+            "user_id": user_id
         }
 
         try:
@@ -100,19 +97,14 @@ class KafkaService:
                 value=json.dumps(message).encode('utf-8')
             )
             logger.info(f"Sent user_service_request for user_id: {user_id}")
+            # Ждем ответа из очереди
+            while True:
+                response = await self.validation_responses.get()
+                if response.get("user_id") == user_id:
+                    return response
         except Exception as e:
             logger.error(f"Failed to send user_service_request for user_id {user_id}: {e}")
-            del self.pending_requests[correlation_id]
             raise HTTPException(status_code=500, detail="Failed to validate user.")
-
-        try:
-            response = await asyncio.wait_for(future, timeout=40.0)
-            return response
-        except asyncio.TimeoutError:
-            del self.pending_requests[correlation_id]
-            raise HTTPException(status_code=504, detail="User validation timed out.")
-        finally:
-            del self.pending_requests[correlation_id]
 
 async def create_product(db: AsyncSession, product_data: ProductCreate, seller_name: str) -> Products:
     """
@@ -225,3 +217,5 @@ async def send_product_registration_message(product_id: int):
         logger.info(f"Sent product.registration message for product_id: {product_id}")
     except Exception as e:
         logger.error(f"Failed to send product.registration message for product_id {product_id}: {e}")
+
+kafka_service = KafkaService()

@@ -11,12 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from contextlib import asynccontextmanager
 import logging
 import json
+from services import kafka_service
 
 # Настройка логгера
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-# Глобальный объект KafkaService
-kafka_service: KafkaService | None = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,8 +23,6 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     logger.info("Database tables created.")
-    global kafka_service
-    kafka_service = KafkaService()
 
     # Запуск KafkaService
     await kafka_service.start()
@@ -54,15 +51,13 @@ async def create_product_endpoint(
     """
     try:
         # Валидация пользователя через Kafka
-        validation_response = await kafka_service.validate_user(product.seller_id)
-        if not validation_response["valid"]:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User is not a seller or does not exist."
-            )
-        seller_name = validation_response["seller_name"]  # Изменено на seller_name
+        seller =  await kafka_service.validate_user(product.seller_id)
+        logger.info("После валидации создаем заказ для " + seller.get('user_name'))
+
+        seller_name = seller.get('user_name')  # Изменено на seller_name
 
         # Создаем новый продукт с seller_name
+        logger.info(product)
         new_product = await create_product(db, product, seller_name)
         logger.info(f"Создан новый продукт: {new_product.product_id}")
 

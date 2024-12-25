@@ -9,7 +9,7 @@ class ProductBase(BaseModel):
     stock: Optional[int] = Field(None, ge=0)  # Количество должно быть >= 0
     category_id: Optional[int] = None  # Идентификатор категории
 
-class ProductCreate(ProductBase):
+class  ProductCreate(ProductBase):
     seller_id: int
     category_id: int
 

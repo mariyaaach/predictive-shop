@@ -1,97 +1,136 @@
+# user-service/app/services.py
+import asyncio
 import json
-import logging
-
-from confluent_kafka import Consumer, Producer
+from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from model import Users
-from logging import log
+from fastapi import HTTPException, status
+import logging
+from database import get_db
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Настройки Kafka Consumer и Producer
-consumer = Consumer({
-    'bootstrap.servers': 'kafka:9092',
-    'group.id': 'user_service_group',
-    'auto.offset.reset': 'earliest',
-    'security.protocol': 'SASL_PLAINTEXT',
-    'sasl.mechanism': 'PLAIN',
-    'sasl.username': 'admin',
-    'sasl.password': 'admin-secret'
-})
+class KafkaService:
+    def __init__(self):
+        self.bootstrap_servers = 'kafka:9092'
+        self.security_protocol = 'SASL_PLAINTEXT'
+        self.sasl_mechanism = 'PLAIN'
+        self.sasl_username = 'admin'
+        self.sasl_password = 'admin-secret'
+        self.group_id = 'user_service_group'
+        self.producer: AIOKafkaProducer = None
+        self.consumer: AIOKafkaConsumer = None
 
-producer = Producer({
-    'bootstrap.servers': 'kafka:9092',
-    'security.protocol': 'SASL_PLAINTEXT',
-    'sasl.mechanism': 'PLAIN',
-    'sasl.username': 'admin',
-    'sasl.password': 'admin-secret'
-})
+    async def start(self):
+        # Инициализация продюсера
+        self.producer = AIOKafkaProducer(
+            bootstrap_servers=self.bootstrap_servers,
+            security_protocol=self.security_protocol,
+            sasl_mechanism=self.sasl_mechanism,
+            sasl_plain_username=self.sasl_username,
+            sasl_plain_password=self.sasl_password
+        )
+        await self.producer.start()
+        logger.info("Kafka producer started.")
 
-consumer.subscribe(['user_service_request', 'user.verified'])
+        # Инициализация консьюмера
+        self.consumer = AIOKafkaConsumer(
+            'user_service_request',
+            'user.verified',
+            bootstrap_servers=self.bootstrap_servers,
+            group_id=self.group_id,
+            security_protocol=self.security_protocol,
+            sasl_mechanism=self.sasl_mechanism,
+            sasl_plain_username=self.sasl_username,
+            sasl_plain_password=self.sasl_password
+        )
+        await self.consumer.start()
+        logger.info("Kafka consumer started.")
 
-async def process_user_validation_request(db: AsyncSession):
-    """
-    Обрабатывает запросы на проверку пользователя через Kafka.
-    Также слушает подтверждения верификации и обновляет статус пользователя.
+        # Запуск задачи для обработки сообщений
+        asyncio.create_task(self.consume_messages())
 
-    Args:
-        db (AsyncSession): Сессия базы данных.
-    """
-    while True:
-        msg = consumer.poll(1.0)  # Проверяем сообщения каждую секунду
-        if msg is None:
-            continue
+    async def stop(self):
+        if self.consumer:
+            await self.consumer.stop()
+            logger.info("Kafka consumer stopped.")
+        if self.producer:
+            await self.producer.stop()
+            logger.info("Kafka producer stopped.")
 
-        # Обработка сообщений из топика user_service_request
-        if msg.topic() == 'user_service_request':
-            logger.log("Пришло в топик service_req")
-            data = json.loads(msg.value().decode('utf-8'))
-            logger.log("Парсим дату " + data)
-            user_id = data.get("user_id")
-            if not user_id:
-                continue
+    async def consume_messages(self):
+        try:
+            async for msg in self.consumer:
+                if msg.topic == 'user_service_request':
+                    logger.info("Пришло сообщение в топик u s")
+                    await asyncio.create_task(self.handle_user_validation(msg))
+                elif msg.topic == 'user.verified':
+                    await asyncio.create_task(self.handle_user_verified(msg))
+        except Exception as e:
+            logger.error(f"Error consuming messages: {e}")
 
-            # Проверяем, существует ли пользователь с ролью `seller`
+    async def handle_user_validation(self, msg):
+        data = json.loads(msg.value.decode('utf-8'))
+        user_id = data.get("user_id")
+        user_name = data.get("user_name")
+        if not user_id:
+            logger.warning("Received user_service_request without user_id.")
+            return
+
+        # Получаем сессию базы данных
+        async for db in get_db():
+            break  # Берем первую доступную сессию
+
+        try:
             result = await db.execute(
                 select(Users).where(Users.user_id == user_id, Users.role == 'seller')
             )
             user = result.scalar_one_or_none()
 
-            # Формирование ответа
-            response = {"user_id": user_id, "valid": bool(user), "user_name": user.user_name, "correlation_id": str(user_id)}
-            await producer.produce('user_service_response', key=str(user_id).encode('utf-8'), value=json.dumps(response).encode('utf-8'))
-            await producer.flush()
-
-        # Обработка сообщений из топика user.verified
-        elif msg.topic() == 'user.verified':
-            data = json.loads(msg.value().decode('utf-8'))
-            user_id = data.get("user_id")
-            if not user_id:
-                continue
-
-            # Обновляем статус пользователя на "verified"
+            response = {"user_id": user_id, "valid": bool(user), "user_name": user.user_name, "correlation_id" : user_id}
             try:
-                result = await db.execute(
-                    select(Users).where(Users.user_id == user_id)
+                await self.producer.send_and_wait(
+                    'user_service_response',
+                    key=str(user_id).encode('utf-8'),
+                    value=json.dumps(response).encode('utf-8')
                 )
-                user = result.scalar_one_or_none()
-
-                if not user:
-                    raise HTTPException(status_code=404, detail="User not found")
-
-                user.verified = True  # Устанавливаем статус verified
-
-                # Сохраняем изменения в базе
-                await db.commit()
-                print(f"User {user_id} verified and status updated in the database.")
-
+                logger.info(f"Sent user_service_response for user_id: {user_id}")
             except Exception as e:
-                print(f"Error updating user verification status: {e}")
-                await db.rollback()
+                logger.error(f"Failed to send user_service_response for user_id {user_id}: {e}")
+        except Exception as e:
+            logger.error(f"Error processing user_service_request for user_id {user_id}: {e}")
 
-async def send_registration_message(user_id):
+    async def handle_user_verified(self, msg):
+        data = json.loads(msg.value.decode('utf-8'))
+        user_id = data.get("user_id")
+        if not user_id:
+            logger.warning("Received user.verified message without user_id.")
+            return
+
+        # Получаем сессию базы данных
+        async for db in get_db():
+            break  # Берем первую доступную сессию
+
+        try:
+            result = await db.execute(
+                select(Users).where(Users.user_id == user_id)
+            )
+            user = result.scalar_one_or_none()
+
+            if not user:
+                logger.warning(f"User {user_id} not found for verification.")
+                return
+
+            user.verified = True
+            await db.commit()
+            logger.info(f"User {user_id} verified and status updated in the database.")
+        except Exception as e:
+            logger.error(f"Error updating user verification status for user_id {user_id}: {e}")
+            await db.rollback()
+
+async def send_registration_message(user_id: int):
     """
     Отправляет сообщение в топик user.registration при регистрации нового пользователя.
 
@@ -102,9 +141,18 @@ async def send_registration_message(user_id):
         "user_id": user_id,
         "status": "registered"
     }
-    # Отправка сообщения в Kafka
-    producer.produce('user.registration', key=str(user_id).encode('utf-8'), value=json.dumps(message))
-    producer.flush()
+    try:
+        await kafka_service.producer.send_and_wait(
+            'user.registration',
+            key=str(user_id).encode('utf-8'),
+            value=json.dumps(message).encode('utf-8')
+        )
+        logger.info(f"Sent user.registration message for user_id: {user_id}")
+    except Exception as e:
+        logger.error(f"Failed to send user.registration message for user_id {user_id}: {e}")
+
+# Инициализация KafkaService
+kafka_service = KafkaService()
 
 
 

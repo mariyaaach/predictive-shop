@@ -15,4 +15,4 @@ bcrypt
 pydantic
 kafka
 confluent_kafka
-logging
+aiokafka
