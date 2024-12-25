@@ -28,11 +28,6 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Инициализация базы данных
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database tables created.")
-
     # Запуск KafkaService
     await kafka_service.start()
     logger.info("KafkaService started.")
@@ -43,7 +38,7 @@ async def lifespan(app: FastAPI):
     await kafka_service.stop()
     logger.info("KafkaService stopped.")
 
-    # Закрытие подключения к базе данных
+    # Закрытие подключения к базе данных (опционально)
     await engine.dispose()
     logger.info("Database connection closed.")
 

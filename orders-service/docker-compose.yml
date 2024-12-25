@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+  orders_backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orders
+    working_dir: /app
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://db-user:db-password@postgres-db:5434/orders_service
+      - KAFKA_BROKER=kafka:9092
+      - MINIO_URL=http://minio:9000
+      - MINIO_ACCESS_KEY=root_user
+      - MINIO_SECRET_KEY=root_password
+      - PYTHONPATH=/app
+    volumes:
+      - ./app:/app  # Монтируем содержимое папки app в /app
+    ports:
+      - "8000:8002"
+    depends_on:
+      - postgres-db
+      - kafka
+      - minio
+    networks:
+      - shared
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
