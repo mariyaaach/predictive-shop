@@ -6,3 +6,4 @@
   - './kafka/docker-compose.zookeeper.yml'
   - '../users-service/docker-compose.yml'
   - '../products-service/docker-compose.yml'
+  - '../orders-service/docker-compose.yml'
