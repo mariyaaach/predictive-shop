@@ -3,6 +3,8 @@ import asyncio
 import json
 import logging
 from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
+from sqlalchemy.orm import selectinload
+
 from database import get_db
 from sqlalchemy.future import select
 
@@ -200,11 +202,13 @@ async def create_order(db: AsyncSession, order: OrderCreate) -> Order:
         raise
 
 async def get_order(db: AsyncSession, order_id: int) -> Order:
-    result = await db.execute(
-        select(Order)
-        .where(Order.order_id == order_id)
-        .options(Order.items)
-    )
+    """Получить заказ с предзагрузкой связанных товаров."""
+    query = (
+    select(Order)
+    .options(selectinload(Order.items))  # Предзагрузка связанных товаров
+    .filter(Order.order_id == order_id)
+        )
+    result = await db.execute(query)
     order = result.scalar_one_or_none()
     if not order:
         raise NoResultFound(f"Order with id {order_id} not found")
