@@ -129,7 +129,7 @@ kafka_service = KafkaService()
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import update, delete
+from sqlalchemy import update, delete, func
 from model import Order, OrderItem, CartItem
 from schemas import OrderCreate, CartItemCreate
 from sqlalchemy.exc import NoResultFound
@@ -276,7 +276,7 @@ async def add_to_cart(db: AsyncSession, user_id: int, item: CartItemCreate) -> C
         new_cart_item = CartItem(
             user_id=user_id,
             product_id=item.product_id,
-            name=item.name,
+            product_name=item.product_name,
             price=item.price,
             seller_id=item.seller_id,
             quantity=item.quantity
@@ -332,7 +332,7 @@ async def get_cart_items(db: AsyncSession, user_id: int, skip: int = 0, limit: i
 
 # Функция для расчета итоговой цены корзины пользователя
 async def calculate_cart_total(db: AsyncSession, user_id: int) -> Decimal:
-    stmt = select(sum(CartItem.price * CartItem.quantity)).where(CartItem.user_id == user_id)
+    stmt = select(func.sum(CartItem.price * CartItem.quantity)).where(CartItem.user_id == user_id)
     result = await db.execute(stmt)
     total = result.scalar_one_or_none()
     return total or Decimal('0.00')

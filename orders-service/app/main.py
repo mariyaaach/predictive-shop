@@ -140,7 +140,7 @@ async def add_to_cart_endpoint(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.delete("/users/{user_id}/cart/{product_id}/", response_model=Optional[CartItemResponse], status_code=status.HTTP_200_OK)
+@app.delete("/users/{user_id}/cart/{product_id}/", response_model=Union[CartItemResponse, dict], status_code=status.HTTP_200_OK)
 async def remove_from_cart_endpoint(
     user_id: int,
     product_id: int,
@@ -162,7 +162,11 @@ async def remove_from_cart_endpoint(
             cart_response = CartItemResponse.model_validate(cart_item)
             return cart_response
         else:
-            return {"detail": "Cart item removed"}
+            # Возвращаем JSON с сообщением об удалении и статусом 200
+            return JSONResponse(
+                content={"detail": "Cart item removed"},
+                status_code=status.HTTP_200_OK
+            )
     except NoResultFound as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
