@@ -1,14 +1,17 @@
 # app/main.py
 
 from fastapi import FastAPI, Depends, HTTPException, status, Query
+from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
-from model import Base
+from sqlalchemy.orm import selectinload
+
+from model import Base, Order
 from schemas import (
     OrderItemResponse, OrderCreate, OrderUpdateStatus, OrderResponse,
     CartTotalResponse, CartItemResponse, CartItemCreate
 )
 from services import (
-    create_order,
+    create_order as order_create,
     get_order,
     update_order_status,
     delete_order,
@@ -55,11 +58,25 @@ app = FastAPI(lifespan=lifespan)
 
 @app.post("/orders/", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
-    created_order = await create_order(db, order)
-    # Отправка сообщения в Kafka о создании заказа
-    order_response = OrderResponse.model_validate(created_order)
+    # Создание заказа
+    created_order = await order_create(db, order)
+
+    # Предзагрузка связанных данных
+    query = (
+        select(Order)
+        .options(selectinload(Order.items))
+        .filter(Order.order_id == created_order.order_id)
+    )
+    result = await db.execute(query)
+    loaded_order = result.scalar_one()
+
+    # Преобразование в Pydantic-модель
+    order_response = OrderResponse.model_validate(loaded_order)
+
+    # Подготовка данных для Kafka
     order_dict = order_response.model_dump()
     await kafka_service.send_order_created(order_dict)
+
     return order_response
 
 @app.get("/orders/{order_id}", response_model=OrderResponse)

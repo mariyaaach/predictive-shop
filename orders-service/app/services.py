@@ -141,6 +141,9 @@ async def create_order(db: AsyncSession, order: OrderCreate) -> Order:
         product_map = {}
         for item in order.items:
             if item.product_id in product_map:
+                logger.info(item.product_id)
+                logger.info(item.quantity)
+                logger.info(item.unit_price)
                 product_map[item.product_id]['quantity'] += item.quantity
                 product_map[item.product_id]['price'] += item.quantity * item.unit_price
             else:
@@ -167,6 +170,9 @@ async def create_order(db: AsyncSession, order: OrderCreate) -> Order:
             )
             order_items.append(order_item)
             total_price += product['price']
+            logger.info(total_price)
+            for i in order_items:
+                logger.info(i)
 
         # Создание нового заказа
         new_order = Order(
