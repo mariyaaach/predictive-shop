@@ -230,10 +230,18 @@ async def update_order_status(db: AsyncSession, order_id: int, status: str) -> O
     return await get_order(db, order_id)
 
 async def delete_order(db: AsyncSession, order_id: int):
+    """Удаляет заказ и связанные с ним товары."""
+    # Сначала удаляем все товары, связанные с заказом
+    delete_items_stmt = delete(OrderItem).where(OrderItem.order_id == order_id)
+    await db.execute(delete_items_stmt)
+
+    # Теперь удаляем сам заказ
     stmt = delete(Order).where(Order.order_id == order_id)
     result = await db.execute(stmt)
+
     if result.rowcount == 0:
         raise NoResultFound(f"Order with id {order_id} not found")
+
     await db.commit()
 
 

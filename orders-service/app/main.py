@@ -4,6 +4,7 @@ from fastapi import FastAPI, Depends, HTTPException, status, Query
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import selectinload
+from starlette.responses import JSONResponse
 
 from model import Base, Order
 from schemas import (
@@ -13,7 +14,7 @@ from schemas import (
 from services import (
     create_order as order_create,
     get_order,
-    update_order_status,
+    update_order_status as update_order,
     delete_order,
     add_to_cart,
     remove_from_cart,
@@ -22,7 +23,7 @@ from services import (
 from database import engine, get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 import uvicorn
-from typing import List, Optional
+from typing import List, Optional, Union
 import asyncio
 import logging
 from contextlib import asynccontextmanager
@@ -88,14 +89,20 @@ async def read_order(order_id: int, db: AsyncSession = Depends(get_db)):
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Order not found")
 
-@app.patch("/orders/{order_id}/status", response_model=Optional[OrderResponse])
+
+
+
+@app.patch("/orders/{order_id}/status", response_model=Union[OrderResponse, dict])
 async def update_order_status(order_id: int, status_update: OrderUpdateStatus, db: AsyncSession = Depends(get_db)):
     try:
-        updated_order = await update_order_status(db, order_id, status_update.status)
+        updated_order = await update_order(db, order_id, status_update.status)
         if updated_order is None:
             # Заказ был отменен и удален, отправляем сообщение в Kafka
             await kafka_service.send_order_canceled(order_id)
-            return {"detail": "Order canceled and deleted"}
+            return JSONResponse(
+                content={"detail": "Order canceled and deleted"},
+                status_code=status.HTTP_200_OK
+            )
         order_response = OrderResponse.model_validate(updated_order)
         return order_response
     except NoResultFound:
