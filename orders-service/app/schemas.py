@@ -45,6 +45,7 @@ class OrderItemCreate(BaseModel):
     name: str
     quantity: int
     unit_price: Decimal = Field(gt=0, max_digits=10, decimal_places=2)
+    seller_id: int
 
     @field_validator('quantity')
     @classmethod

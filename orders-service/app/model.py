@@ -27,6 +27,7 @@ class OrderItem(Base):
     quantity = Column(Integer, nullable=False, default=1)
     unit_price = Column(DECIMAL, nullable=False)
     price = Column(DECIMAL, nullable=False)
+    seller_id = Column(Integer, nullable=False)
 
     order = relationship("Order", back_populates="items")
 

@@ -8,10 +8,10 @@ from schemas import (
     CartTotalResponse, CartItemResponse, CartItemCreate
 )
 from services import (
-    create_order as create_order_service,
-    get_order as get_order_service,
-    update_order_status as update_order_status_service,
-    delete_order as delete_order_service,
+    create_order,
+    get_order,
+    update_order_status,
+    delete_order,
     add_to_cart,
     remove_from_cart,
     get_orders_by_user, get_cart_items, calculate_cart_total, kafka_service
@@ -55,7 +55,7 @@ app = FastAPI(lifespan=lifespan)
 
 @app.post("/orders/", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
-    created_order = await create_order_service(db, order)
+    created_order = await create_order(db, order)
     # Отправка сообщения в Kafka о создании заказа
     order_response = OrderResponse.model_validate(created_order)
     order_dict = order_response.model_dump()
@@ -65,7 +65,7 @@ async def create_order(order: OrderCreate, db: AsyncSession = Depends(get_db)):
 @app.get("/orders/{order_id}", response_model=OrderResponse)
 async def read_order(order_id: int, db: AsyncSession = Depends(get_db)):
     try:
-        order = await get_order_service(db, order_id)
+        order = await get_order(db, order_id)
         order_response = OrderResponse.model_validate(order)
         return order_response
     except NoResultFound:
@@ -74,7 +74,7 @@ async def read_order(order_id: int, db: AsyncSession = Depends(get_db)):
 @app.patch("/orders/{order_id}/status", response_model=Optional[OrderResponse])
 async def update_order_status(order_id: int, status_update: OrderUpdateStatus, db: AsyncSession = Depends(get_db)):
     try:
-        updated_order = await update_order_status_service(db, order_id, status_update.status)
+        updated_order = await update_order_status(db, order_id, status_update.status)
         if updated_order is None:
             # Заказ был отменен и удален, отправляем сообщение в Kafka
             await kafka_service.send_order_canceled(order_id)
@@ -87,7 +87,7 @@ async def update_order_status(order_id: int, status_update: OrderUpdateStatus, d
 @app.delete("/orders/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_order_endpoint(order_id: int, db: AsyncSession = Depends(get_db)):
     try:
-        await delete_order_service(db, order_id)
+        await delete_order(db, order_id)
         # Отправка сообщения в Kafka об отмене заказа (опционально)
         await kafka_service.send_order_canceled(order_id)
     except NoResultFound:

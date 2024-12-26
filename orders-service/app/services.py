@@ -135,42 +135,63 @@ from typing import Optional, List
 from decimal import Decimal
 
 async def create_order(db: AsyncSession, order: OrderCreate) -> Order:
-    new_order = Order(
-        user_id=order.user_id,
-        status="pending",
-    )
-    db.add(new_order)
-    await db.commit()
-    await db.refresh(new_order)
 
-    total = Decimal('0.00')
-    for item in order.items:
-        # Проверяем, есть ли уже товар с таким product_id в заказе
-        existing_item = None
-        for existing in new_order.items:
-            if existing.product_id == item.product_id:
-                existing_item = existing
-                break
-        if existing_item:
-            existing_item.quantity += item.quantity
-            existing_item.price = existing_item.quantity * existing_item.unit_price
-        else:
+    try:
+        # Группируем продукты по product_id для объединения количеств
+        product_map = {}
+        for item in order.items:
+            if item.product_id in product_map:
+                product_map[item.product_id]['quantity'] += item.quantity
+                product_map[item.product_id]['price'] += item.quantity * item.unit_price
+            else:
+                product_map[item.product_id] = {
+                    'product_id': item.product_id,
+                    'name': item.name,
+                    'quantity': item.quantity,
+                    'unit_price': item.unit_price,
+                    'price': item.quantity * item.unit_price,
+                    'seller_id': item.seller_id
+                }
+
+        # Подготовка данных для вставки в таблицу orders_items
+        order_items = []
+        total_price = Decimal('0.00')
+        for product in product_map.values():
             order_item = OrderItem(
-                order_id=new_order.order_id,
-                product_id=item.product_id,
-                name=item.name,
-                quantity=item.quantity,
-                unit_price=item.unit_price,
-                price=item.quantity * item.unit_price
+                product_id=product['product_id'],
+                name=product['name'],
+                quantity=product['quantity'],
+                unit_price=product['unit_price'],
+                price=product['price'],
+                seller_id=product['seller_id']
             )
-            db.add(order_item)
-            new_order.items.append(order_item)
-        total += item.quantity * item.unit_price
+            order_items.append(order_item)
+            total_price += product['price']
 
-    new_order.total_price = total
-    await db.commit()
-    await db.refresh(new_order)
-    return new_order
+        # Создание нового заказа
+        new_order = Order(
+            user_id=order.user_id,
+            status="pending",
+            total_price=total_price,
+            items=order_items  # Связываем позиции заказа с заказом
+        )
+
+        # Добавление заказа и позиций заказа в сессию
+        db.add(new_order)
+
+        # Одновременный коммит всех изменений
+        await db.commit()
+
+        # Обновление объекта заказа с данными из базы
+        await db.refresh(new_order)
+
+        logger.info(f"Created new order with order_id: {new_order.order_id}")
+        return new_order
+
+    except Exception as e:
+        logger.error(f"Error creating order: {e}")
+        await db.rollback()
+        raise
 
 async def get_order(db: AsyncSession, order_id: int) -> Order:
     result = await db.execute(
