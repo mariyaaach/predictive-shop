@@ -123,3 +123,41 @@ async def get_product_endpoint(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error"
         )
+
+@app.get("/products", response_model=list[ProductOut])
+async def get_all_products_endpoint(
+        db: AsyncSession = Depends(get_db)
+):
+    """
+    Получает список всех продуктов.
+    """
+    try:
+        result = await db.execute(select(Products))
+        products = result.scalars().all()
+        return products
+    except Exception as e:
+        logger.error(f"Ошибка получения всех продуктов: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
+        )
+@app.get("/products/seller/{seller_id}", response_model=list[ProductOut])
+async def get_products_by_seller_endpoint(
+        seller_id: int,
+        db: AsyncSession = Depends(get_db)
+):
+    """
+    Получает список продуктов по ID продавца.
+    """
+    try:
+        result = await db.execute(
+            select(Products).where(Products.seller_id == seller_id)
+        )
+        products = result.scalars().all()
+        return products
+    except Exception as e:
+        logger.error(f"Ошибка получения продуктов для seller_id {seller_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal Server Error"
+        )
