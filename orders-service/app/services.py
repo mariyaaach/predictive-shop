@@ -10,28 +10,39 @@ logger = logging.getLogger(__name__)
 
 class KafkaService:
     def __init__(self):
-        self.bootstrap_servers = 'kafka:9092'  # Убедитесь, что адрес и порт правильные
-        self.producer: Optional[AIOKafkaProducer] = None
-        self.consumer: Optional[AIOKafkaConsumer] = None
+        self.bootstrap_servers = 'kafka:9092'
+        self.security_protocol = 'SASL_PLAINTEXT'
+        self.sasl_mechanism = 'PLAIN'
+        self.sasl_username = 'admin'
+        self.sasl_password = 'admin-secret'
+        self.group_id = 'order_service_group'
+        self.producer: AIOKafkaProducer = None
+        self.consumer: AIOKafkaConsumer = None
 
     async def start(self):
         # Инициализация продюсера
         self.producer = AIOKafkaProducer(
-            bootstrap_servers=self.bootstrap_servers
-            # Добавьте дополнительные настройки, если необходимо
+            bootstrap_servers=self.bootstrap_servers,
+            security_protocol=self.security_protocol,
+            sasl_mechanism=self.sasl_mechanism,
+            sasl_plain_username=self.sasl_username,
+            sasl_plain_password=self.sasl_password
         )
         await self.producer.start()
         logger.info("Kafka producer started.")
 
-        # Если вам не нужен потребитель, вы можете пропустить инициализацию консьюмера
-        # Если же вы хотите получать какие-то события, оставьте инициализацию консьюмера
 
-        # Пример инициализации консьюмера (можно удалить, если не требуется)
+
+        # Пример инициализации консьюмера
         self.consumer = AIOKafkaConsumer(
             'order_events_response',  # Укажите нужные топики, если требуется
             bootstrap_servers=self.bootstrap_servers,
-            group_id='order_service_group'
-            # Добавьте дополнительные настройки, если необходимо
+            group_id=self.group_id,
+            security_protocol=self.security_protocol,
+            sasl_mechanism=self.sasl_mechanism,
+            sasl_plain_username=self.sasl_username,
+            sasl_plain_password=self.sasl_password
+
         )
         await self.consumer.start()
         logger.info("Kafka consumer started.")
@@ -155,7 +166,7 @@ async def create_order(db: AsyncSession, order: OrderCreate) -> Order:
             db.add(order_item)
             new_order.items.append(order_item)
         total += item.quantity * item.unit_price
-    
+
     new_order.total_price = total
     await db.commit()
     await db.refresh(new_order)

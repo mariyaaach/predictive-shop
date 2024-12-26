@@ -1,0 +1,22 @@
+-- Заполнение таблицы категорий товаров для магазина техники
+INSERT INTO categories (name) VALUES
+                                  ('Smartphones'),
+                                  ('Laptops'),
+                                  ('Tablets'),
+                                  ('Televisions'),
+                                  ('Cameras'),
+                                  ('Headphones'),
+                                  ('Smart Watches'),
+                                  ('Gaming Consoles'),
+                                  ('Printers'),
+                                  ('Computer Accessories'),
+                                  ('Storage Devices'),
+                                  ('Monitors'),
+                                  ('Networking Equipment'),
+                                  ('Home Appliances'),
+                                  ('Wearable Tech'),
+                                  ('Drones'),
+                                  ('Projectors'),
+                                  ('Audio Systems'),
+                                  ('Video Equipment'),
+                                  ('Car Electronics');
