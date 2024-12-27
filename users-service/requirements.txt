@@ -16,3 +16,4 @@ pydantic
 kafka
 confluent_kafka
 aiokafka
+jose

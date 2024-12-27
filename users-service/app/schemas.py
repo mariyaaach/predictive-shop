@@ -1,11 +1,9 @@
-from pydantic import BaseModel, EmailStr, Field
-from uuid import UUID
+# app/schemas.py
+from pydantic import BaseModel, EmailStr
 from typing import Optional
-from enum import Enum
 from datetime import datetime
 
-
-# Схемы для аутентификации
+# Токены
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -13,32 +11,38 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     user_id: Optional[int] = None
 
-
-# Схема для базовой информации о пользователе
+# Базовая модель пользователя (все поля, которые храним в таблице user + профиль)
 class UserBase(BaseModel):
     user_name: str
     email: EmailStr
     role: str
+    verified: bool
+
+# Модель для создания пользователя
+class UserCreate(UserBase):
+    password: str
     first_name: str
     last_name: str
     phone: str
     address: str
-    verified: bool
 
-# Схема для создания нового пользователя
-class UserCreate(UserBase):
-    password: str
-
-# Схема для отображения информации о пользователе
-class UserOut(UserBase):
+# Модель для ответа (UserOut) – выводим ВСЕ поля
+class UserOut(BaseModel):
     user_id: int
+    user_name: str
+    email: EmailStr
+    role: str
     verified: bool
     created_at: datetime
+    first_name: str
+    last_name: str
+    phone: str
+    address: str
 
     class Config:
-        from_attributes = True  # Указывает Pydantic, что данные будут приходить из SQLAlchemy-моделей
+        from_attributes = True  # Позволяет Pydantic считывать данные из SQLAlchemy-моделей
 
-
+# Модель для обновления
 class UserUpdate(BaseModel):
     user_name: Optional[str] = None
     email: Optional[EmailStr] = None
@@ -51,13 +55,3 @@ class UserUpdate(BaseModel):
 
     class Config:
         orm_mode = True
-
-
-class UserProfileOut(BaseModel):
-    first_name: str
-    last_name: str
-    phone: Optional[str]
-    address: Optional[str]
-
-    class Config:
-        from_attributes = True

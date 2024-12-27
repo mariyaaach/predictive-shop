@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+aiokafka
+aiosmtplib
+pydantic
+python-dotenv
+sqlalchemy
+asyncpg

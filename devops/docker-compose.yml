@@ -7,4 +7,5 @@
   - '../users-service/docker-compose.yml'
   - '../products-service/docker-compose.yml'
   - '../orders-service/docker-compose.yml'
+  - '../frontend/docker-compose.yml'
 

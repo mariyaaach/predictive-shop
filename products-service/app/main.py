@@ -3,7 +3,7 @@ from sqlalchemy.orm import selectinload
 import uvicorn
 from fastapi import FastAPI, Depends, HTTPException, status
 from model import Products, Categories, Base
-from schemas import ProductOut, ProductCreate, ProductUpdate
+from schemas import ProductOut, ProductCreate, ProductUpdate, CategoryOut
 from database import get_db, engine
 from services import create_product, update_product, KafkaService, send_product_registration_message
 from sqlalchemy.future import select
@@ -12,6 +12,7 @@ from contextlib import asynccontextmanager
 import logging
 import json
 from services import kafka_service
+from typing import List
 
 # Настройка логгера
 logging.basicConfig(level=logging.INFO)
@@ -161,3 +162,23 @@ async def get_products_by_seller_endpoint(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal Server Error"
         )
+    
+@app.get("/categories", response_model=List[CategoryOut])
+async def get_categories(db: AsyncSession = Depends(get_db)):
+    """
+    Возвращаем список всех категорий (category_id, name) из таблицы.
+    """
+    result = await db.execute(select(Categories))
+    categories = result.scalars().all()
+    return categories
+
+@app.get("/categories/{category_id}", response_model=CategoryOut)
+async def get_category_by_id(category_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Возвращает одну категорию по ее ID.
+    """
+    result = await db.execute(select(Categories).where(Categories.category_id == category_id))
+    category = result.scalar_one_or_none()
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return category

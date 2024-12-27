@@ -6,7 +6,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import selectinload
 from starlette.responses import JSONResponse
 
-from model import Base, Order
+from model import Base, Order, OrderItem
 from schemas import (
     OrderItemResponse, OrderCreate, OrderUpdateStatus, OrderResponse,
     CartTotalResponse, CartItemResponse, CartItemCreate
@@ -209,6 +209,44 @@ async def get_cart_total_endpoint(
     return CartTotalResponse(user_id=user_id, total_price=float(total))
 
 
-# Запуск приложения
-if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+@app.get("/orders/seller/{seller_id}", response_model=List[OrderResponse])
+async def get_orders_for_seller(seller_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Возвращаем все заказы, в которых среди OrderItem есть товары с указанным seller_id.
+    """
+    # Находим все OrderItem, где seller_id = seller_id:
+    items_query = select(OrderItem.order_id).where(OrderItem.seller_id == seller_id)
+    items_result = await db.execute(items_query)
+    order_ids = {row[0] for row in items_result.fetchall()}  # множество ID заказов
+
+    if not order_ids:
+        # Нет ни одного заказа
+        return []
+
+    # Загружаем заказы по найденным ID, вместе с OrderItem
+    orders_query = (
+        select(Order)
+        .options(selectinload(Order.items))
+        .where(Order.order_id.in_(order_ids))
+        .order_by(Order.order_id)
+    )
+    result = await db.execute(orders_query)
+    orders = result.scalars().all()
+
+    # Преобразуем в список Pydantic-моделей
+    return [OrderResponse.model_validate(o) for o in orders]
+
+@app.get("/orders/buyer/{user_id}", response_model=List[OrderResponse])
+async def get_orders_for_buyer(user_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Возвращает все заказы, где order.user_id = user_id
+    """
+    query = (
+        select(Order)
+        .options(selectinload(Order.items))
+        .where(Order.user_id == user_id)
+        .order_by(Order.order_id)
+    )
+    result = await db.execute(query)
+    orders = result.scalars().all()
+    return [OrderResponse.model_validate(o) for o in orders]

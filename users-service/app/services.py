@@ -180,14 +180,13 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-# Функции для работы с паролями
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
-# Создание токена
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
@@ -202,78 +201,84 @@ def decode_access_token(token: str) -> Optional[dict]:
     except JWTError:
         return None
 
-
-
-async def get_user_by_user_name(db: AsyncSession, user_name: str) -> Users:
+async def get_user_info(db: AsyncSession, user_id: int) -> Optional[dict]:
+    """
+    Возвращаем словарь с полями user + profile (если профиль есть).
+    """
+    # Загружаем пользователя с подгруженным profile
     result = await db.execute(
         select(Users)
         .options(selectinload(Users.profile))
-        .where(Users.user_name == user_name)
+        .where(Users.user_id == user_id)
     )
+    db_user = result.scalars().first()
+
+    if not db_user:
+        return None
+
+    profile = db_user.profile
+    return {
+        "user_id": db_user.user_id,
+        "user_name": db_user.user_name,
+        "email": db_user.email,
+        "role": db_user.role,
+        "created_at": db_user.created_at,
+        "verified": db_user.verified,
+        "first_name": profile.first_name if profile else "",
+        "last_name": profile.last_name if profile else "",
+        "phone": profile.phone if profile else "",
+        "address": profile.address if profile else "",
+    }
+
+async def get_user_by_user_name(db: AsyncSession, user_name: str) -> Optional[Users]:
+    q = select(Users).where(Users.user_name == user_name)
+    result = await db.execute(q)
     return result.scalar_one_or_none()
 
-async def create_user(db: AsyncSession, user: UserCreate):
-    hashed_password = get_password_hash(user.password)
-
-    # Создаем пользователя
+async def create_user(db: AsyncSession, user_data):
+    """
+    Создаём запись в таблице Users + связанную запись в user_profiles.
+    """
+    hashed_password = get_password_hash(user_data.password)
     db_user = Users(
-        user_name=user.user_name,
+        user_name=user_data.user_name,
         hashed_password=hashed_password,
-        email=user.email,
-        role=user.role,
-        verified=user.verified,
+        email=user_data.email,
+        role=user_data.role,
+        verified=False
     )
     db.add(db_user)
     await db.commit()
-    await db.refresh(db_user)  # Обновляем db_user, чтобы получить user_id
+    await db.refresh(db_user)
 
-    # Создаем профиль пользователя
+    # Создаём профиль
     db_profile = User_profiles(
-        user_id=db_user.user_id,  # Используем id из db_user
-        first_name=user.first_name,
-        last_name=user.last_name,
-        phone=user.phone,
-        address=user.address,
+        user_id=db_user.user_id,
+        first_name=user_data.first_name,
+        last_name=user_data.last_name,
+        phone=user_data.phone,
+        address=user_data.address
     )
     db.add(db_profile)
     await db.commit()
     await db.refresh(db_profile)
-
     return db_user
 
-
-async def get_user(db: AsyncSession, user_id: int):
-    result = await db.execute(select(Users).where(Users.user_id == user_id))
-    return result.scalars().first()
-
-
-async def update_user_data(
-        db: AsyncSession,
-        user_id: int,
-        updates: UserUpdate
-) -> Users:
-    # Находим пользователя с профилем
+async def update_user_data(db: AsyncSession, user_id: int, updates) -> dict:
+    """
+    Обновляем пользователя + профиль.
+    Возвращаем словарь (для схемы UserUpdate).
+    """
     result = await db.execute(
         select(Users)
-        .options(selectinload(Users.profile))  # Загружаем профиль
+        .options(selectinload(Users.profile))
         .where(Users.user_id == user_id)
     )
-    db_user = result.scalar_one_or_none()
-
+    db_user = result.scalars().first()
     if not db_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise HTTPException(status_code=404, detail="User not found")
 
-    # Если приходят данные для профиля, но профиль отсутствует
-    if any([updates.first_name, updates.last_name, updates.phone, updates.address]) and not db_user.profile:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Profile does not exist for this user"
-        )
-
-    # Обновляем поля пользователя
+    # Обновляем поля Users
     if updates.user_name is not None:
         db_user.user_name = updates.user_name
     if updates.email is not None:
@@ -283,7 +288,7 @@ async def update_user_data(
     if updates.verified is not None:
         db_user.verified = updates.verified
 
-    # Обновляем профиль, если он существует
+    # Обновляем профиль
     if db_user.profile:
         if updates.first_name is not None:
             db_user.profile.first_name = updates.first_name
@@ -294,17 +299,15 @@ async def update_user_data(
         if updates.address is not None:
             db_user.profile.address = updates.address
 
-    # Сохраняем изменения
     await db.commit()
-
-    # Создаем финальный объект с данными пользователя и профиля
-    return UserUpdate(
-        user_name=db_user.user_name,
-        email=db_user.email,
-        role=db_user.role,
-        verified=db_user.verified,
-        first_name=db_user.profile.first_name if db_user.profile else None,
-        last_name=db_user.profile.last_name if db_user.profile else None,
-        phone=db_user.profile.phone if db_user.profile else None,
-        address=db_user.profile.address if db_user.profile else None
-    )
+    await db.refresh(db_user)
+    return {
+        "user_name": db_user.user_name,
+        "email": db_user.email,
+        "role": db_user.role,
+        "verified": db_user.verified,
+        "first_name": db_user.profile.first_name,
+        "last_name": db_user.profile.last_name,
+        "phone": db_user.profile.phone,
+        "address": db_user.profile.address,
+    }
